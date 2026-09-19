@@ -69,10 +69,10 @@ public final class BiomeDistributionFix {
         FixMod.LOGGER.info(
                 "[Fix] Biome distribution: enabled={}, normal_region~{}-{} blocks, mountain_region~{}-{} blocks, mountain_keep_chance={}.",
                 ENABLED,
-                NORMAL_REGION_SIZE * 2L - NORMAL_JITTER * 4L,
-                NORMAL_REGION_SIZE * 2L + NORMAL_JITTER * 4L,
-                MOUNTAIN_REGION_SIZE * 2L - MOUNTAIN_JITTER * 4L,
-                MOUNTAIN_REGION_SIZE * 2L + MOUNTAIN_JITTER * 4L,
+                NORMAL_REGION_SIZE * 4L - NORMAL_JITTER * 8L,
+                NORMAL_REGION_SIZE * 4L + NORMAL_JITTER * 8L,
+                MOUNTAIN_REGION_SIZE * 4L - MOUNTAIN_JITTER * 8L,
+                MOUNTAIN_REGION_SIZE * 4L + MOUNTAIN_JITTER * 8L,
                 MOUNTAIN_KEEP_CHANCE
         );
     }
