@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mixin(value = ChunkSection.class, priority = 900)
+@Mixin(value = ChunkSection.class, priority = 1100)
 public abstract class ChunkSectionBiomeMixin {
     private static final int SLICE_SIZE = 4;
 
