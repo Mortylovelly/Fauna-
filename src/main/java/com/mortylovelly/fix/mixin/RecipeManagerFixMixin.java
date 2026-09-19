@@ -25,9 +25,13 @@ public abstract class RecipeManagerFixMixin {
             Profiler profiler,
             CallbackInfo callbackInfo
     ) {
-        if (map.remove(BROKEN_NATURALIST_DELIGHT_RECIPE) != null) {
+        JsonElement recipe = map.get(BROKEN_NATURALIST_DELIGHT_RECIPE);
+
+        if (recipe != null && recipe.toString().contains("naturalist:cattail")) {
+            map.remove(BROKEN_NATURALIST_DELIGHT_RECIPE);
+
             FixMod.LOGGER.warn(
-                    "[Fix] Removed broken recipe {} because the installed Naturalist version no longer provides naturalist:cattail.",
+                    "[Fix] Removed broken recipe {} because it references the removed naturalist:cattail item.",
                     BROKEN_NATURALIST_DELIGHT_RECIPE
             );
         }
