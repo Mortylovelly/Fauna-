@@ -12,7 +12,6 @@
     "sources": "https://github.com/Mortylovelly/Fauna-"
   },
   "license": "MIT",
-  "icon": "assets/fix/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
