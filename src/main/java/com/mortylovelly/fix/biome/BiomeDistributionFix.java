@@ -16,10 +16,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * larger, irregular horizontal regions before the biome palette is written to
  * a chunk.
  *
- * Normal regions are roughly 80x80 blocks (about 6,400 square blocks).
- * Mountain regions use a larger 160x160 block scale and are additionally
- * throttled by a very low-frequency mask so mountain biome families do not
- * occupy the world as frequently as ordinary land biomes.
+ * Normal biome regions are deliberately measured in THOUSANDS of blocks:
+ * roughly 3,600-10,800 blocks from one side of a region to the other.
+ * Mountain biome regions are even larger, roughly 5,200-14,800 blocks wide,
+ * and are additionally throttled so large mountain zones remain rare.
  *
  * Rivers and oceans stay at the source resolution because forcing them into
  * large two-dimensional cells would destroy their natural corridor/coastline
@@ -28,22 +28,29 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class BiomeDistributionFix {
     private static final boolean ENABLED = true;
 
-    /** Horizontal region size in biome/noise coordinates. One unit is 4 blocks. */
-    private static final int NORMAL_REGION_SIZE = 20;      // ~80 blocks
-    private static final int MOUNTAIN_REGION_SIZE = 40;    // ~160 blocks
+    /**
+     * Region lattice size in biome-source coordinates.
+     * 1 source unit corresponds to 4 horizontal blocks.
+     *
+     * Normal regions therefore vary roughly from 3,600 to 10,800 blocks
+     * across after deterministic center jitter is applied.
+     */
+    private static final int NORMAL_REGION_SIZE = 1800;
+    private static final int NORMAL_JITTER = 450;
 
-    /** Small deterministic center jitter prevents a square-grid look. */
-    private static final int NORMAL_JITTER = 4;
-    private static final int MOUNTAIN_JITTER = 8;
+    /**
+     * Mountain regions are intentionally larger: roughly 5,200-14,800 blocks
+     * across after jitter. Their individual cells are also gated below so
+     * only a minority of candidate mountain zones survive.
+     */
+    private static final int MOUNTAIN_REGION_SIZE = 2500;
+    private static final int MOUNTAIN_JITTER = 600;
 
     /**
      * Fraction of large mountain cells that are retained. A lower value makes
      * mountain-biome families occur less often without changing ordinary biomes.
      */
-    private static final double MOUNTAIN_KEEP_CHANCE = 0.60D;
-
-    /** Low-frequency mountain gate: 48 biome units = ~192 blocks. */
-    private static final int MOUNTAIN_GATE_SIZE = 48;
+    private static final double MOUNTAIN_KEEP_CHANCE = 0.35D;
 
     /** Limit cached source samples so long exploration cannot grow memory forever. */
     private static final int CACHE_LIMIT = 32768;
@@ -60,10 +67,12 @@ public final class BiomeDistributionFix {
 
     public static void logSettings() {
         FixMod.LOGGER.info(
-                "[Fix] Biome distribution: enabled={}, normal_region={} blocks, mountain_region={} blocks, mountain_keep_chance={}.",
+                "[Fix] Biome distribution: enabled={}, normal_region~{}-{} blocks, mountain_region~{}-{} blocks, mountain_keep_chance={}.",
                 ENABLED,
-                NORMAL_REGION_SIZE * 4,
-                MOUNTAIN_REGION_SIZE * 4,
+                NORMAL_REGION_SIZE * 2L - NORMAL_JITTER * 4L,
+                NORMAL_REGION_SIZE * 2L + NORMAL_JITTER * 4L,
+                MOUNTAIN_REGION_SIZE * 2L - MOUNTAIN_JITTER * 4L,
+                MOUNTAIN_REGION_SIZE * 2L + MOUNTAIN_JITTER * 4L,
                 MOUNTAIN_KEEP_CHANCE
         );
     }
@@ -119,10 +128,10 @@ public final class BiomeDistributionFix {
             return normalBiome;
         }
 
-        int gateX = Math.floorDiv(x, MOUNTAIN_GATE_SIZE);
-        int gateZ = Math.floorDiv(z, MOUNTAIN_GATE_SIZE);
+        int mountainGateX = Math.floorDiv(x, MOUNTAIN_REGION_SIZE);
+        int mountainGateZ = Math.floorDiv(z, MOUNTAIN_REGION_SIZE);
 
-        if (hashToUnit(gateX, gateZ, MOUNTAIN_GATE_SALT) <= MOUNTAIN_KEEP_CHANCE) {
+        if (hashToUnit(mountainGateX, mountainGateZ, MOUNTAIN_GATE_SALT) <= MOUNTAIN_KEEP_CHANCE) {
             return mountainBiome;
         }
 
@@ -238,7 +247,7 @@ public final class BiomeDistributionFix {
             return current;
         }
 
-        int step = NORMAL_REGION_SIZE * 2;
+        int step = NORMAL_REGION_SIZE / 2;
 
         int[][] offsets = {
                 {-step, 0},
