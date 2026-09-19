@@ -1,40 +1,58 @@
-# Fix - Modpack Compatibility Fixes
+# Fix - Modpack Compatibility & Balance
 
-A targeted compatibility and stability mod for the Mortylovelly 1.20.1 Fabric modpack.
+A targeted compatibility, fauna-balancing and stability mod for the Mortylovelly Minecraft 1.20.1 Fabric modpack.
 
-## Purpose
+## What Fix does
 
-Fix is not intended to replace major optimization mods or world-generation mods. It exists to apply small, targeted fixes when two installed mods disagree, a broken data file creates startup errors, or a known incompatibility needs a stable compatibility layer.
+Fix is built specifically for this modpack. It does not replace C2ME, Lithium, ModernFix, ServerCore or the other major optimization mods.
 
-The project is intentionally modular so additional fixes can be added without changing already-working mechanics.
+Its main jobs are:
 
-## Current targets
+- remove selected duplicate natural animal spawns while keeping the best/most distinctive implementation;
+- repair confirmed registration and data errors;
+- apply compatibility patches only when their target mods are present;
+- keep manual summons, spawn eggs, existing animals and entity registrations intact.
 
-### Naturalist Delight / Naturalist 5.x
+## Fauna deduplication policy
 
-Naturalist 5.x removed the old `naturalist:cattail` item while older Naturalist Delight data can still reference it. Fix removes only the broken `naturalistdelight:piece_of_cattail` recipe before Minecraft tries to parse it.
+Fix currently prefers:
 
-### YUNG's Cave Biomes / Cave Biomes Delight
+- Alex's Mobs Continued over Naturalist for bear, catfish, elephant, rhinoceros and rattlesnake.
+- Critters and Companions over Faunify for dragonflies, ladybugs, beetles, leaf insects, roly-polies, stick bugs and weevils.
+- Naturalist over Hybrid Birds for ducks.
+- Friends&Foes over Ecologics for the Mob Vote-style crab.
 
-Fix provides a conditional replacement for the broken Sand Snapper loot table when both mods are present. The replacement intentionally avoids the missing `cavebiomesdelight:sand_snapper` item so the world can load without a loot-table parse error.
+Only the duplicate entity's biome natural-spawn entries are removed. The entity itself is not deleted.
 
-Fix also provides a valid Ice Cube loot table that removes the invalid tool-context function reported by the current pack.
+## Stability fixes
 
-## Design rules
+- Repairs missing default attributes for Faunify entities listed in the current pack log.
+- Removes the known broken Naturalist Delight cattail recipe when it references the removed `naturalist:cattail`.
+- Includes targeted YUNG's Cave Biomes / Cave Biomes Delight loot-table compatibility data.
 
-- Minecraft 1.20.1 only for this branch.
-- Java 17.
-- No duplicate performance systems.
-- No world-generation rewriting unless a specific compatibility issue requires it.
-- Fixes are enabled automatically when their target resources/mods are present.
-- Known fixes are isolated so they can be removed or replaced independently.
+## Safety rules
 
-## Build
+Fix deliberately avoids:
 
-Use:
+- changing Tectonic terrain parameters;
+- changing SkyLimitless world height;
+- changing Better Caves configuration;
+- changing C2ME/VMP/ServerCore thread configuration;
+- adding new permanent entity ticking systems;
+- killing duplicate entities after they spawn.
+
+New fixes should be tied to a confirmed problem in this exact 1.20.1 modpack.
+
+## Development
+
+Minecraft: 1.20.1  
+Fabric Loader: 0.19.5  
+Fabric API: 0.92.12+1.20.1  
+Java: 17  
+Fix version: 0.2.0
+
+Build command:
 
 ```text
 gradle build --no-daemon
 ```
-
-The GitHub Actions workflow uses Gradle 8.12 and Java 17.
