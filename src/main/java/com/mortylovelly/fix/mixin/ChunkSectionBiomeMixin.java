@@ -9,56 +9,44 @@ import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.PalettedContainer;
 import net.minecraft.world.chunk.ReadableContainer;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.HashMap;
-import java.util.Map;
-
-@Mixin(value = ChunkSection.class, priority = 1100)
+/**
+ * Applies the biome distribution pass after Noisium has populated the biome
+ * palette. This avoids conflicting with Noisium's overwrite of populateBiomes.
+ */
+@Mixin(value = ChunkSection.class, priority = 900)
 public abstract class ChunkSectionBiomeMixin {
-    private static final int SLICE_SIZE = 4;
-
     @Shadow
     private ReadableContainer<RegistryEntry<Biome>> biomeContainer;
 
-    /**
-     * Reimplements the small Noisium biome-population loop so the large-region
-     * biome normalization can coexist with Noisium's own ChunkSection overwrite.
-     *
-     * This deliberately keeps the same 4x4x4 palette population structure.
-     */
-    @Overwrite
-    public void populateBiomes(
+    @Inject(
+            method = "populateBiomes",
+            at = @At("TAIL"),
+            require = 1
+    )
+    private void fix$populateBiomes(
             BiomeSupplier biomeSupplier,
             MultiNoiseUtil.MultiNoiseSampler sampler,
             int x,
             int y,
-            int z
+            int z,
+            CallbackInfo ci
     ) {
-        PalettedContainer<RegistryEntry<Biome>> palettedContainer = this.biomeContainer.slice();
-        Map<Long, RegistryEntry<Biome>> localCache = new HashMap<>(8);
+        @SuppressWarnings("unchecked")
+        PalettedContainer<RegistryEntry<Biome>> palettedContainer =
+                (PalettedContainer<RegistryEntry<Biome>>) this.biomeContainer;
 
-        for (int posY = 0; posY < SLICE_SIZE; ++posY) {
-            for (int posZ = 0; posZ < SLICE_SIZE; ++posZ) {
-                for (int posX = 0; posX < SLICE_SIZE; ++posX) {
-                    palettedContainer.swapUnsafe(
-                            posX,
-                            posY,
-                            posZ,
-                            BiomeDistributionFix.sample(
-                                    biomeSupplier,
-                                    x + posX,
-                                    y + posY,
-                                    z + posZ,
-                                    sampler,
-                                    localCache
-                            )
-                    );
-                }
-            }
-        }
-
-        this.biomeContainer = palettedContainer;
+        BiomeDistributionFix.process(
+                palettedContainer,
+                biomeSupplier,
+                sampler,
+                x,
+                y,
+                z
+        );
     }
 }
