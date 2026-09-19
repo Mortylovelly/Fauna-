@@ -20,34 +20,99 @@ public final class FaunaDeduplicator {
                         ModificationPhase.REMOVALS,
                         BiomeSelectors.all(),
                         context -> {
-                            int removed = 0;
+                            // Alex's Mobs Continued is preferred for these exact overlaps.
+                            removeIfPresent(
+                                    context,
+                                    "alexsmobs",
+                                    "naturalist",
+                                    "bear",
+                                    "catfish",
+                                    "elephant",
+                                    "rhinoceros",
+                                    "rattlesnake"
+                            );
 
-                            removed += removeIfPresent(context, "alexsmobs", "naturalist",
-                                    "bear", "catfish", "elephant", "rhinoceros", "rattlesnake");
+                            // Critters and Companions has the preferred versions of these small creatures.
+                            removeIfPresent(
+                                    context,
+                                    "crittersandcompanions",
+                                    "faunify",
+                                    "dragonfly",
+                                    "ladybug",
+                                    "beetle",
+                                    "leafinsect",
+                                    "rolypoly",
+                                    "stickbug",
+                                    "weevil"
+                            );
 
-                            removed += removeIfPresent(context, "crittersandcompanions", "faunify",
-                                    "dragonfly", "ladybug", "beetle", "leafinsect",
-                                    "rolypoly", "stickbug", "weevil");
+                            // Keep Critters and Companions versions over Naturalist for these exact duplicates.
+                            removeIfPresent(
+                                    context,
+                                    "crittersandcompanions",
+                                    "naturalist",
+                                    "dragonfly",
+                                    "snail"
+                            );
 
-                            removed += removeIfPresent(context, "naturalist", "hybrid_birds",
-                                    "duck");
+                            // Naturalist already provides a duck, while Hybrid Birds is kept for
+                            // the many bird species that are not represented by Naturalist.
+                            removeIfPresent(
+                                    context,
+                                    "naturalist",
+                                    "hybrid_birds",
+                                    "duck"
+                            );
 
-                            removed += removeIfPresent(context, "friendsandfoes", "ecologics",
-                                    "crab");
+                            // Keep the Mob-Vote-style Friends&Foes crab over the Ecologics crab.
+                            removeIfPresent(
+                                    context,
+                                    "friendsandfoes",
+                                    "ecologics",
+                                    "crab"
+                            );
 
-                            if (removed > 0) {
-                                FixMod.LOGGER.debug(
-                                        "[Fix] Removed {} duplicate natural spawn entries from a biome.",
-                                        removed
-                                );
-                            }
+                            // Keep the more feature-rich/curated implementations and let Wildlife
+                            // provide species that the other animal mods do not already cover.
+                            removeIfPresent(
+                                    context,
+                                    "naturalist",
+                                    "wildlife",
+                                    "bluebird",
+                                    "robin",
+                                    "sparrow",
+                                    "anteater",
+                                    "badger",
+                                    "boar",
+                                    "capybara",
+                                    "deer",
+                                    "alligator",
+                                    "catfish",
+                                    "dragonfly",
+                                    "snail"
+                            );
+
+                            removeIfPresent(
+                                    context,
+                                    "crittersandcompanions",
+                                    "wildlife",
+                                    "ferret"
+                            );
+
+                            removeIfPresent(
+                                    context,
+                                    "faunify",
+                                    "wildlife",
+                                    "hedgehog",
+                                    "opossum"
+                            );
                         }
                 );
 
         FixMod.LOGGER.info("[Fix] Fauna duplicate-spawn rules registered.");
     }
 
-    private static int removeIfPresent(
+    private static void removeIfPresent(
             BiomeModificationContext context,
             String preferredMod,
             String duplicateMod,
@@ -55,20 +120,16 @@ public final class FaunaDeduplicator {
     ) {
         if (!FabricLoader.getInstance().isModLoaded(preferredMod)
                 || !FabricLoader.getInstance().isModLoaded(duplicateMod)) {
-            return 0;
+            return;
         }
-
-        int removed = 0;
 
         for (String entityName : entityNames) {
             Identifier id = new Identifier(duplicateMod, entityName);
-
             EntityType<?> type = Registries.ENTITY_TYPE.getOrEmpty(id).orElse(null);
+
             if (type != null && context.getSpawnSettings().removeSpawnsOfEntityType(type)) {
-                removed++;
+                FixMod.LOGGER.debug("[Fix] Removed duplicate natural spawn: {}.", id);
             }
         }
-
-        return removed;
     }
 }
