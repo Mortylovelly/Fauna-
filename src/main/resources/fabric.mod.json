@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "fix",
   "version": "${version}",
-  "name": "Fix - Modpack Compatibility Fixes",
-  "description": "Targeted compatibility and stability fixes for the Mortylovelly 1.20.1 Fabric modpack.",
+  "name": "Fix - Modpack Compatibility & Balance",
+  "description": "Targeted compatibility, fauna deduplication, stability and safe fixes for the Mortylovelly 1.20.1 Fabric modpack.",
   "authors": [
     "Mortylovelly"
   ],
@@ -18,9 +18,6 @@
       "com.mortylovelly.fix.FixMod"
     ]
   },
-  "mixins": [
-    "fix.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": "1.20.1",
