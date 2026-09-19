@@ -1,7 +1,8 @@
 package com.mortylovelly.fix;
 
+import com.mortylovelly.fix.fauna.FaunaDeduplicator;
+import com.mortylovelly.fix.fix.FaunifyAttributeFix;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -17,6 +18,31 @@ public final class FixMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        registerCompatibilityResourcePack();
+
+        if (FabricLoader.getInstance().isModLoaded("faunify")) {
+            FaunifyAttributeFix.registerMissingAttributes();
+        }
+
+        FaunaDeduplicator.register();
+
+        LOGGER.info("[Fix] Fix - Modpack Compatibility & Balance loaded for Minecraft 1.20.1.");
+        logModState("naturalist", "Naturalist");
+        logModState("alexsmobs", "Alex's Mobs Continued");
+        logModState("wildlife", "Wildlife");
+        logModState("crittersandcompanions", "Critters and Companions");
+        logModState("faunify", "Faunify");
+        logModState("friendsandfoes", "Friends&Foes");
+        logModState("ecologics", "Ecologics");
+        logModState("hybrid_birds", "Hybrid Birds");
+        logModState("naturalistdelight", "Naturalist Delight");
+        logModState("yungscavebiomes", "YUNG's Cave Biomes");
+        logModState("cavebiomesdelight", "Cave Biomes Delight");
+        logModState("distanthorizons", "Distant Horizons");
+        logModState("minecartmagic", "Minecart Magic");
+    }
+
+    private static void registerCompatibilityResourcePack() {
         FabricLoader.getInstance()
                 .getModContainer(MOD_ID)
                 .ifPresentOrElse(
@@ -28,25 +54,12 @@ public final class FixMod implements ModInitializer {
                             );
 
                             LOGGER.info(
-                                    "[Fix] Compatibility resource pack {}",
+                                    "[Fix] Compatibility resource pack {}.",
                                     registered ? "registered" : "was already registered"
                             );
                         },
-                        () -> LOGGER.error("[Fix] Could not find our own mod container")
+                        () -> LOGGER.error("[Fix] Could not find our own mod container.")
                 );
-
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            LOGGER.info("[Fix] Fix - Modpack Compatibility Fixes loaded for Minecraft 1.20.1.");
-
-            logModState("naturalist", "Naturalist compatibility target");
-            logModState("naturalistdelight", "Naturalist Delight compatibility target");
-            logModState("yungscavebiomes", "YUNG's Cave Biomes compatibility target");
-            logModState("cavebiomesdelight", "Cave Biomes Delight compatibility target");
-            logModState("distanthorizons", "Distant Horizons diagnostics target");
-            logModState("minecartmagic", "Minecart Magic diagnostics target");
-        });
-
-        LOGGER.info("[Fix] Initial compatibility fixes registered.");
     }
 
     private static void logModState(String modId, String label) {
