@@ -10,7 +10,6 @@ import net.minecraft.world.chunk.PalettedContainer;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -18,9 +17,9 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Enlarges horizontal biome regions while preserving the original biome source.
  *
- * The pass runs after Noisium has already populated each 4x4x4 biome palette.
- * Instead of replacing the whole populateBiomes method, the mixin changes the
- * completed palette. This is important for compatibility with Noisium and C2ME.
+ * The pass runs after Noisium has populated each 4x4x4 biome palette.
+ * The horizontal biome layout is normalized to large deterministic regions,
+ * while the original biome source is still used to choose the actual biome.
  *
  * Horizontal coordinates here are biome-source coordinates: one coordinate
  * corresponds to four horizontal blocks.
@@ -30,18 +29,18 @@ public final class BiomeDistributionFix {
 
     /*
      * Normal regions:
-     *   1800 source units = 7200 blocks nominal cell width.
+     *   1800 source units = 7200 blocks nominal width.
      *   Jitter can move centers by +/- 450 source units.
-     *   The resulting nearest-center region width is roughly 3600-10800 blocks.
+     *   Resulting nearest-center region width is roughly 3600-10800 blocks.
      */
     private static final int NORMAL_REGION_SIZE = 1800;
     private static final int NORMAL_JITTER = 450;
 
     /*
      * Mountain regions:
-     *   2500 source units = 10000 blocks nominal cell width.
+     *   2500 source units = 10000 blocks nominal width.
      *   Jitter can move centers by +/- 600 source units.
-     *   Resulting width is roughly 5200-14800 blocks.
+     *   Resulting nearest-center region width is roughly 5200-14800 blocks.
      */
     private static final int MOUNTAIN_REGION_SIZE = 2500;
     private static final int MOUNTAIN_JITTER = 600;
@@ -86,6 +85,9 @@ public final class BiomeDistributionFix {
 
     /**
      * Processes the already populated Noisium biome palette.
+     *
+     * The expensive horizontal region lookup is calculated once per 4x4
+     * horizontal palette column and reused for all four Y samples.
      */
     public static void process(
             PalettedContainer<RegistryEntry<Biome>> biomeContainer,
@@ -108,16 +110,27 @@ public final class BiomeDistributionFix {
         }
 
         Map<Long, RegistryEntry<Biome>> regionCache = new HashMap<>(16);
-        Map<Long, RegionKey> regionKeys = new HashMap<>(16);
+        RegionKey[][] normalKeys = new RegionKey[4][4];
+
+        for (int posZ = 0; posZ < 4; ++posZ) {
+            for (int posX = 0; posX < 4; ++posX) {
+                normalKeys[posX][posZ] = findNearestRegion(
+                        x + posX,
+                        z + posZ,
+                        NORMAL_REGION_SIZE,
+                        NORMAL_JITTER,
+                        NORMAL_JITTER_SALT
+                );
+            }
+        }
 
         for (int posY = 0; posY < 4; ++posY) {
+            int sampleY = y + posY;
+            Map<Long, Selection> decisionCache = new HashMap<>(4);
+
             for (int posZ = 0; posZ < 4; ++posZ) {
                 for (int posX = 0; posX < 4; ++posX) {
                     CELL_SAMPLES.incrementAndGet();
-
-                    int sampleX = x + posX;
-                    int sampleY = y + posY;
-                    int sampleZ = z + posZ;
 
                     RegistryEntry<Biome> raw = biomeContainer.get(posX, posY, posZ);
 
@@ -126,112 +139,49 @@ public final class BiomeDistributionFix {
                         continue;
                     }
 
-                    RegionKey normalKey = findNearestRegion(
-                            sampleX,
-                            sampleZ,
-                            NORMAL_REGION_SIZE,
-                            NORMAL_JITTER,
-                            NORMAL_JITTER_SALT
-                    );
-
-                    RegistryEntry<Biome> normalBiome = getRegionBiome(
-                            normalKey,
+                    RegionKey normalKey = normalKeys[posX][posZ];
+                    long decisionKey = BlockPos.asLong(
+                            normalKey.cellX(),
                             sampleY,
-                            supplier,
-                            sampler,
-                            regionCache
+                            normalKey.cellZ()
                     );
 
-                    RegistryEntry<Biome> finalBiome = normalBiome;
-                    String decision = "normal";
+                    Selection selection = decisionCache.get(decisionKey);
 
-                    if (isProtected(normalBiome)) {
-                        finalBiome = raw;
-                        decision = "normal-protected";
-                    } else if (isMountainBiome(normalBiome)) {
-                        MOUNTAIN_CANDIDATES.incrementAndGet();
-
-                        RegionKey mountainKey = findNearestRegion(
-                                sampleX,
-                                sampleZ,
-                                MOUNTAIN_REGION_SIZE,
-                                MOUNTAIN_JITTER,
-                                MOUNTAIN_JITTER_SALT
-                        );
-
-                        RegistryEntry<Biome> mountainBiome = getRegionBiome(
-                                mountainKey,
+                    if (selection == null) {
+                        selection = selectBiome(
+                                normalKey,
                                 sampleY,
                                 supplier,
                                 sampler,
                                 regionCache
                         );
+                        decisionCache.put(decisionKey, selection);
 
-                        double gate = hashToUnit(
-                                mountainKey.cellX(),
-                                mountainKey.cellZ(),
-                                MOUNTAIN_GATE_SALT
+                        logDecision(
+                                populateCall,
+                                x + posX,
+                                sampleY,
+                                z + posZ,
+                                raw,
+                                selection
                         );
-
-                        if (gate <= MOUNTAIN_KEEP_CHANCE && isMountainBiome(mountainBiome)) {
-                            finalBiome = mountainBiome;
-                            MOUNTAIN_KEPT.incrementAndGet();
-                            decision = "mountain-kept";
-                        } else {
-                            MOUNTAIN_REJECTED.incrementAndGet();
-
-                            RegistryEntry<Biome> fallback = findNearestNonMountainBiome(
-                                    sampleX,
-                                    sampleY,
-                                    sampleZ,
-                                    normalKey,
-                                    supplier,
-                                    sampler,
-                                    regionCache,
-                                    regionKeys
-                            );
-
-                            if (fallback != null) {
-                                finalBiome = fallback;
-                                FALLBACK_FOUND.incrementAndGet();
-                                decision = "mountain-rejected-fallback";
-                            } else {
-                                finalBiome = raw;
-                                FALLBACK_FAILED.incrementAndGet();
-                                decision = "mountain-rejected-raw-fallback";
-                            }
-
-                            logDecision(
-                                    populateCall,
-                                    sampleX,
-                                    sampleY,
-                                    sampleZ,
-                                    raw,
-                                    normalBiome,
-                                    finalBiome,
-                                    normalKey,
-                                    decision
-                            );
-                        }
                     }
+
+                    if (selection.keepRaw()) {
+                        continue;
+                    }
+
+                    RegistryEntry<Biome> finalBiome = selection.biome();
 
                     if (finalBiome != raw) {
                         NORMAL_REPLACEMENTS.incrementAndGet();
-                        biomeContainer.swapUnsafe(posX, posY, posZ, finalBiome);
-
-                        if (!decision.equals("mountain-rejected-fallback")) {
-                            logDecision(
-                                    populateCall,
-                                    sampleX,
-                                    sampleY,
-                                    sampleZ,
-                                    raw,
-                                    normalBiome,
-                                    finalBiome,
-                                    normalKey,
-                                    decision
-                            );
-                        }
+                        biomeContainer.swapUnsafe(
+                                posX,
+                                posY,
+                                posZ,
+                                finalBiome
+                        );
                     }
                 }
             }
@@ -239,7 +189,7 @@ public final class BiomeDistributionFix {
 
         if (populateCall == 1L || populateCall % 1000L == 0L) {
             FixMod.LOGGER.info(
-                    "[Fix][BiomeStats] populate_calls={}, cells={}, protected={}, normal_changed={}, mountain_candidates={}, mountain_kept={}, mountain_rejected={}, fallback_found={}, fallback_failed={}.",
+                    "[Fix][BiomeStats] populate_calls={}, cells={}, protected={}, changed={}, mountain_candidates={}, mountain_kept={}, mountain_rejected={}, fallback_found={}, fallback_failed={}.",
                     POPULATE_CALLS.get(),
                     CELL_SAMPLES.get(),
                     PROTECTED_CELLS.get(),
@@ -253,6 +203,99 @@ public final class BiomeDistributionFix {
         }
     }
 
+    private static Selection selectBiome(
+            RegionKey normalKey,
+            int y,
+            BiomeSupplier supplier,
+            MultiNoiseUtil.MultiNoiseSampler sampler,
+            Map<Long, RegistryEntry<Biome>> regionCache
+    ) {
+        RegistryEntry<Biome> normalBiome = getRegionBiome(
+                normalKey,
+                y,
+                supplier,
+                sampler,
+                regionCache
+        );
+
+        if (isProtected(normalBiome)) {
+            return Selection.keepRaw("normal-protected", normalBiome);
+        }
+
+        if (!isMountainBiome(normalBiome)) {
+            return Selection.use(normalBiome, "normal", normalBiome, null, -1.0D);
+        }
+
+        MOUNTAIN_CANDIDATES.incrementAndGet();
+
+        /*
+         * Mountains are selected on their own, larger lattice. This is what
+         * makes a retained mountain zone substantially larger than normal
+         * biome zones.
+         */
+        RegionKey mountainKey = findNearestRegion(
+                normalKey.sampleX(),
+                normalKey.sampleZ(),
+                MOUNTAIN_REGION_SIZE,
+                MOUNTAIN_JITTER,
+                MOUNTAIN_JITTER_SALT
+        );
+
+        RegistryEntry<Biome> mountainBiome = getRegionBiome(
+                mountainKey,
+                y,
+                supplier,
+                sampler,
+                regionCache
+        );
+
+        double gate = hashToUnit(
+                mountainKey.cellX(),
+                mountainKey.cellZ(),
+                MOUNTAIN_GATE_SALT
+        );
+
+        if (gate <= MOUNTAIN_KEEP_CHANCE && isMountainBiome(mountainBiome)) {
+            MOUNTAIN_KEPT.incrementAndGet();
+            return Selection.use(
+                    mountainBiome,
+                    "mountain-kept",
+                    normalBiome,
+                    mountainKey,
+                    gate
+            );
+        }
+
+        MOUNTAIN_REJECTED.incrementAndGet();
+
+        RegistryEntry<Biome> fallback = findNearestNonMountainBiome(
+                normalKey,
+                y,
+                supplier,
+                sampler,
+                regionCache
+        );
+
+        if (fallback != null) {
+            FALLBACK_FOUND.incrementAndGet();
+            return Selection.use(
+                    fallback,
+                    "mountain-rejected-fallback",
+                    normalBiome,
+                    mountainKey,
+                    gate
+            );
+        }
+
+        FALLBACK_FAILED.incrementAndGet();
+        return Selection.keepRaw(
+                "mountain-rejected-raw-fallback",
+                normalBiome,
+                mountainKey,
+                gate
+        );
+    }
+
     private static RegistryEntry<Biome> getRegionBiome(
             RegionKey key,
             int y,
@@ -260,7 +303,12 @@ public final class BiomeDistributionFix {
             MultiNoiseUtil.MultiNoiseSampler sampler,
             Map<Long, RegistryEntry<Biome>> regionCache
     ) {
-        long cacheKey = BlockPos.asLong(key.cellX(), y, key.cellZ());
+        long cacheKey = BlockPos.asLong(
+                key.cellX(),
+                y,
+                key.cellZ()
+        );
+
         RegistryEntry<Biome> biome = regionCache.get(cacheKey);
 
         if (biome == null) {
@@ -277,23 +325,20 @@ public final class BiomeDistributionFix {
     }
 
     private static RegistryEntry<Biome> findNearestNonMountainBiome(
-            int x,
-            int y,
-            int z,
             RegionKey origin,
+            int y,
             BiomeSupplier supplier,
             MultiNoiseUtil.MultiNoiseSampler sampler,
-            Map<Long, RegistryEntry<Biome>> regionCache,
-            Map<Long, RegionKey> regionKeys
+            Map<Long, RegistryEntry<Biome>> regionCache
     ) {
         RegionKey bestKey = null;
-        long bestDistance = Long.MAX_VALUE;
         RegistryEntry<Biome> bestBiome = null;
+        long bestDistance = Long.MAX_VALUE;
 
         /*
-         * Search a small 5x5 neighborhood. Mountain regions that are denied
-         * are therefore absorbed into the nearest normal biome region instead
-         * of immediately falling back to the original tiny mountain patches.
+         * Search a 5x5 neighborhood. Denied mountain candidates therefore
+         * merge into a nearby large normal region instead of restoring the
+         * original tiny mountain patches.
          */
         for (int dx = -2; dx <= 2; ++dx) {
             for (int dz = -2; dz <= 2; ++dz) {
@@ -309,9 +354,6 @@ public final class BiomeDistributionFix {
                         NORMAL_JITTER_SALT
                 );
 
-                long keyId = BlockPos.asLong(candidate.cellX(), y, candidate.cellZ());
-                regionKeys.putIfAbsent(keyId, candidate);
-
                 RegistryEntry<Biome> candidateBiome = getRegionBiome(
                         candidate,
                         y,
@@ -325,8 +367,8 @@ public final class BiomeDistributionFix {
                 }
 
                 long distance = squaredDistance(
-                        x,
-                        z,
+                        origin.sampleX(),
+                        origin.sampleZ(),
                         candidate.sampleX(),
                         candidate.sampleZ()
                 );
@@ -348,29 +390,31 @@ public final class BiomeDistributionFix {
             int y,
             int z,
             RegistryEntry<Biome> raw,
-            RegistryEntry<Biome> normalBiome,
-            RegistryEntry<Biome> finalBiome,
-            RegionKey normalKey,
-            String decision
+            Selection selection
     ) {
         if (DETAILED_LOGS.getAndIncrement() >= 48) {
             return;
         }
 
+        RegionKey mountainKey = selection.mountainKey();
+
         FixMod.LOGGER.info(
-                "[Fix][BiomeProbe] call={}, pos=({}, {}, {}), raw={}, normal={}, final={}, regionCell=({}, {}), regionCenter=({}, {}), decision={}.",
+                "[Fix][BiomeProbe] call={}, pos=({}, {}, {}), raw={}, normalOrSelected={}, final={}, decision={}, normalCenter=({}, {}), mountainCenter={}, mountainGate={}.",
                 populateCall,
                 x * 4,
                 y * 4,
                 z * 4,
                 biomeId(raw),
-                biomeId(normalBiome),
-                biomeId(finalBiome),
-                normalKey.cellX(),
-                normalKey.cellZ(),
-                normalKey.sampleX() * 4,
-                normalKey.sampleZ() * 4,
-                decision
+                biomeId(selection.biome()),
+                selection.keepRaw() ? biomeId(raw) : biomeId(selection.biome()),
+                selection.decision(),
+                selection.normalSource().getKey().map(key -> key.getValue().toString()).orElse("<unknown>"),
+                mountainKey == null
+                        ? "-"
+                        : "(" + mountainKey.sampleX() * 4 + ", " + mountainKey.sampleZ() * 4 + ")",
+                mountainKey == null
+                        ? "-"
+                        : String.format(java.util.Locale.ROOT, "%.3f/%.2f", selection.mountainGate(), MOUNTAIN_KEEP_CHANCE)
         );
     }
 
@@ -447,9 +491,7 @@ public final class BiomeDistributionFix {
                 || path.contains("jagged")
                 || path.contains("windswept")
                 || path.contains("slope")
-                || path.contains("slopes")
-                || path.contains("meadow")
-                || path.equals("grove");
+                || path.contains("slopes");
     }
 
     private static boolean isProtected(RegistryEntry<Biome> biome) {
@@ -459,7 +501,10 @@ public final class BiomeDistributionFix {
             return true;
         }
 
-        if (path.contains("river") || path.contains("ocean")) {
+        if (path.contains("river")
+                || path.contains("ocean")
+                || path.contains("cave")
+                || path.contains("deep_dark")) {
             return true;
         }
 
@@ -530,6 +575,60 @@ public final class BiomeDistributionFix {
         return value ^ (value >>> 31);
     }
 
-    private record RegionKey(int cellX, int cellZ, int sampleX, int sampleZ) {
+    private record RegionKey(
+            int cellX,
+            int cellZ,
+            int sampleX,
+            int sampleZ
+    ) {
+    }
+
+    private record Selection(
+            RegistryEntry<Biome> biome,
+            boolean keepRaw,
+            String decision,
+            RegistryEntry<Biome> normalSource,
+            RegionKey mountainKey,
+            double mountainGate
+    ) {
+        private static Selection use(
+                RegistryEntry<Biome> biome,
+                String decision,
+                RegistryEntry<Biome> normalSource,
+                RegionKey mountainKey,
+                double mountainGate
+        ) {
+            return new Selection(
+                    biome,
+                    false,
+                    decision,
+                    normalSource,
+                    mountainKey,
+                    mountainGate
+            );
+        }
+
+        private static Selection keepRaw(
+                String decision,
+                RegistryEntry<Biome> normalSource
+        ) {
+            return keepRaw(decision, normalSource, null, -1.0D);
+        }
+
+        private static Selection keepRaw(
+                String decision,
+                RegistryEntry<Biome> normalSource,
+                RegionKey mountainKey,
+                double mountainGate
+        ) {
+            return new Selection(
+                    normalSource,
+                    true,
+                    decision,
+                    normalSource,
+                    mountainKey,
+                    mountainGate
+            );
+        }
     }
 }
