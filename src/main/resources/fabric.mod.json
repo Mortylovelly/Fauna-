@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "fix",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "name": "Fix - Modpack Compatibility & Balance",
   "description": "Targeted compatibility, fauna deduplication, stability and safe fixes for the Mortylovelly 1.20.1 Fabric modpack.",
   "authors": [
