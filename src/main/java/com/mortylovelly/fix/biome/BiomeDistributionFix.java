@@ -212,14 +212,32 @@ public final class BiomeDistributionFix {
             MultiNoiseUtil.MultiNoiseSampler sampler,
             Map<RegionSampleKey, RegistryEntry<Biome>> regionCache
     ) {
-        RegistryEntry<Biome> normalBiome = getRegionBiome(normalKey, y, supplier, sampler, regionCache);
+        RegistryEntry<Biome> normalCenterBiome = getRegionBiome(
+                normalKey, y, supplier, sampler, regionCache
+        );
+        RegistryEntry<Biome> normalBiome = normalCenterBiome;
 
         /*
-         * Rivers, oceans, caves, and known Nether/End biomes are not flattened
-         * into a large land biome region.
+         * A protected biome at a grid centre must not disable scaling for the
+         * whole surrounding land region. Keep protected raw cells untouched,
+         * but use the nearest large non-mountain land region as the baseline.
          */
-        if (isProtected(normalBiome)) {
-            return Selection.keepRaw("normal-centre-protected", normalBiome, null, -1.0D);
+        if (isProtected(normalCenterBiome)) {
+            RegistryEntry<Biome> fallback = findNearestNonMountainBiome(
+                    normalKey, y, supplier, sampler, regionCache
+            );
+            if (fallback == null) {
+                FALLBACK_FAILED.incrementAndGet();
+                return Selection.keepRaw(
+                        "protected-centre-no-land-fallback",
+                        normalCenterBiome,
+                        null,
+                        null,
+                        -1.0D
+                );
+            }
+            FALLBACK_FOUND.incrementAndGet();
+            normalBiome = fallback;
         }
 
         RegistryEntry<Biome> mountainBiome = getRegionBiome(mountainKey, y, supplier, sampler, regionCache);
@@ -242,6 +260,7 @@ public final class BiomeDistributionFix {
                 return Selection.use(
                         mountainBiome,
                         "mountain-region-kept",
+                        normalCenterBiome,
                         normalBiome,
                         mountainBiome,
                         mountainGate
@@ -267,6 +286,7 @@ public final class BiomeDistributionFix {
                 return Selection.use(
                         fallback,
                         "normal-mountain-demoted-to-neighbour",
+                        normalCenterBiome,
                         normalBiome,
                         mountainBiome,
                         mountainGate
@@ -276,6 +296,7 @@ public final class BiomeDistributionFix {
             FALLBACK_FAILED.incrementAndGet();
             return Selection.keepRaw(
                     "fallback-missing-raw-preserved",
+                    normalCenterBiome,
                     normalBiome,
                     mountainBiome,
                     mountainGate
@@ -285,6 +306,7 @@ public final class BiomeDistributionFix {
         return Selection.use(
                 normalBiome,
                 isMountainBiome(mountainBiome) ? "mountain-candidate-rejected-normal-region" : "normal-region",
+                normalCenterBiome,
                 normalBiome,
                 mountainBiome,
                 mountainGate
@@ -326,43 +348,57 @@ public final class BiomeDistributionFix {
         RegistryEntry<Biome> bestBiome = null;
         long bestDistance = Long.MAX_VALUE;
 
-        for (int dx = -3; dx <= 3; ++dx) {
-            for (int dz = -3; dz <= 3; ++dz) {
-                if (dx == 0 && dz == 0) {
-                    continue;
+        /*
+         * Search outward one ring at a time. Once a ring contains a usable
+         * biome, farther rings cannot produce a geographically nearer cell.
+         * This avoids dozens of unnecessary biome-source calls in normal use.
+         */
+        for (int radius = 1; radius <= 2; ++radius) {
+            bestBiome = null;
+            bestDistance = Long.MAX_VALUE;
+
+            for (int dx = -radius; dx <= radius; ++dx) {
+                for (int dz = -radius; dz <= radius; ++dz) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != radius) {
+                        continue;
+                    }
+
+                    RegionKey candidate = regionKey(
+                            origin.cellX() + dx,
+                            origin.cellZ() + dz,
+                            NORMAL_REGION_SIZE,
+                            NORMAL_JITTER,
+                            NORMAL_JITTER_SALT
+                    );
+
+                    RegistryEntry<Biome> candidateBiome = getRegionBiome(
+                            candidate, y, supplier, sampler, regionCache
+                    );
+
+                    if (isProtected(candidateBiome) || isMountainBiome(candidateBiome)) {
+                        continue;
+                    }
+
+                    long distance = squaredDistance(
+                            origin.sampleX(),
+                            origin.sampleZ(),
+                            candidate.sampleX(),
+                            candidate.sampleZ()
+                    );
+
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestBiome = candidateBiome;
+                    }
                 }
+            }
 
-                RegionKey candidate = regionKey(
-                        origin.cellX() + dx,
-                        origin.cellZ() + dz,
-                        NORMAL_REGION_SIZE,
-                        NORMAL_JITTER,
-                        NORMAL_JITTER_SALT
-                );
-
-                RegistryEntry<Biome> candidateBiome = getRegionBiome(
-                        candidate, y, supplier, sampler, regionCache
-                );
-
-                if (isProtected(candidateBiome) || isMountainBiome(candidateBiome)) {
-                    continue;
-                }
-
-                long distance = squaredDistance(
-                        origin.sampleX(),
-                        origin.sampleZ(),
-                        candidate.sampleX(),
-                        candidate.sampleZ()
-                );
-
-                if (distance < bestDistance) {
-                    bestDistance = distance;
-                    bestBiome = candidateBiome;
-                }
+            if (bestBiome != null) {
+                return bestBiome;
             }
         }
 
-        return bestBiome;
+        return null;
     }
 
     private static void logDecision(
@@ -387,8 +423,9 @@ public final class BiomeDistributionFix {
 
         FixMod.LOGGER.info(
                 "[Fix][BiomeProbe] probe={}, call={}, world_pos=({}, {}, {}), raw={}, " +
-                        "normal_center=({}, {}), normal_candidate={}, mountain_center=({}, {}), " +
-                        "mountain_candidate={}, mountain_roll={}/{}, decision={}, final={}.",
+                        "normal_center=({}, {}), normal_center_biome={}, normal_candidate={}, " +
+                        "mountain_center=({}, {}), mountain_candidate={}, mountain_roll={}/{}, " +
+                        "decision={}, final={}.",
                 logNumber + 1,
                 populateCall,
                 x * 4,
@@ -397,6 +434,7 @@ public final class BiomeDistributionFix {
                 biomeId(raw),
                 normalKey.sampleX() * 4,
                 normalKey.sampleZ() * 4,
+                biomeId(selection.normalCenterBiome()),
                 biomeId(selection.normalBiome()),
                 mountainKey.sampleX() * 4,
                 mountainKey.sampleZ() * 4,
@@ -609,6 +647,7 @@ public final class BiomeDistributionFix {
             RegistryEntry<Biome> biome,
             boolean keepRaw,
             String decision,
+            RegistryEntry<Biome> normalCenterBiome,
             RegistryEntry<Biome> normalBiome,
             RegistryEntry<Biome> mountainBiome,
             double mountainGate
@@ -616,23 +655,25 @@ public final class BiomeDistributionFix {
         private static Selection use(
                 RegistryEntry<Biome> biome,
                 String decision,
+                RegistryEntry<Biome> normalCenterBiome,
                 RegistryEntry<Biome> normalBiome,
                 RegistryEntry<Biome> mountainBiome,
                 double mountainGate
         ) {
             return new Selection(
-                    biome, false, decision, normalBiome, mountainBiome, mountainGate
+                    biome, false, decision, normalCenterBiome, normalBiome, mountainBiome, mountainGate
             );
         }
 
         private static Selection keepRaw(
                 String decision,
+                RegistryEntry<Biome> normalCenterBiome,
                 RegistryEntry<Biome> normalBiome,
                 RegistryEntry<Biome> mountainBiome,
                 double mountainGate
         ) {
             return new Selection(
-                    normalBiome, true, decision, normalBiome, mountainBiome, mountainGate
+                    normalBiome, true, decision, normalCenterBiome, normalBiome, mountainBiome, mountainGate
             );
         }
     }
