@@ -1,5 +1,6 @@
 package com.mortylovelly.fix;
 
+import com.mortylovelly.fix.biome.BiomeDistributionFix;
 import com.mortylovelly.fix.fauna.FaunaDeduplicator;
 import com.mortylovelly.fix.fix.FaunifyAttributeFix;
 import net.fabricmc.api.ModInitializer;
@@ -25,8 +26,16 @@ public final class FixMod implements ModInitializer {
         }
 
         FaunaDeduplicator.register();
+        BiomeDistributionFix.logSettings();
 
         LOGGER.info("[Fix] Fix - Modpack Compatibility & Balance loaded for Minecraft 1.20.1.");
+        LOGGER.info(
+                "[Fix][BiomeDiag] loaded_mod_version={}",
+                FabricLoader.getInstance()
+                        .getModContainer(MOD_ID)
+                        .map(container -> container.getMetadata().getVersion().getFriendlyString())
+                        .orElse("unknown")
+        );
         logModState("naturalist", "Naturalist");
         logModState("alexsmobs", "Alex's Mobs Continued");
         logModState("wildlife", "Wildlife");
