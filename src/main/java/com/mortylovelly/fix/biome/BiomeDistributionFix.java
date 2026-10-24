@@ -54,7 +54,9 @@ public final class BiomeDistributionFix {
     private static final AtomicLong PROTECTED_CELLS = new AtomicLong();
     private static final AtomicLong REGION_CACHE_MISSES = new AtomicLong();
     private static final AtomicLong CELLS_CHANGED = new AtomicLong();
-    private static final AtomicLong MOUNTAIN_CANDIDATES = new AtomicLong();
+    private static final AtomicLong MOUNTAIN_CANDIDATE_DECISIONS = new AtomicLong();
+    private static final AtomicLong MOUNTAIN_NEIGHBOR_HITS = new AtomicLong();
+    private static final AtomicLong MOUNTAIN_NEIGHBOR_MISSES = new AtomicLong();
     private static final AtomicLong MOUNTAIN_KEPT = new AtomicLong();
     private static final AtomicLong MOUNTAIN_REJECTED = new AtomicLong();
     private static final AtomicLong FALLBACK_FOUND = new AtomicLong();
@@ -65,7 +67,7 @@ public final class BiomeDistributionFix {
 
     public static void logSettings() {
         FixMod.LOGGER.info(
-                "[Fix][BiomeDiag] algorithm=v2, enabled={}, coordinate_scale=4 blocks/quart, " +
+                "[Fix][BiomeDiag] algorithm=v3, enabled={}, coordinate_scale=4 blocks/quart, " +
                         "normal_regions~{}-{} blocks (nominal {}), mountain_regions~{}-{} blocks " +
                         "(nominal {}), mountain_keep_chance={}, detail_probe_limit={}.",
                 ENABLED,
@@ -111,6 +113,9 @@ public final class BiomeDistributionFix {
 
         Map<RegionSampleKey, RegistryEntry<Biome>> regionCache = new HashMap<>(48);
         Map<DecisionKey, Selection> decisionCache = new HashMap<>(32);
+        long sampledCells = 0L;
+        long protectedCells = 0L;
+        long changedCells = 0L;
         RegionKey[][] normalKeys = new RegionKey[4][4];
         RegionKey[][] mountainKeys = new RegionKey[4][4];
 
@@ -135,11 +140,11 @@ public final class BiomeDistributionFix {
 
             for (int posZ = 0; posZ < 4; ++posZ) {
                 for (int posX = 0; posX < 4; ++posX) {
-                    CELL_SAMPLES.incrementAndGet();
+                    sampledCells++;
 
                     RegistryEntry<Biome> raw = biomeContainer.get(posX, posY, posZ);
                     if (isProtected(raw)) {
-                        PROTECTED_CELLS.incrementAndGet();
+                        protectedCells++;
                         continue;
                     }
 
@@ -178,16 +183,27 @@ public final class BiomeDistributionFix {
                     RegistryEntry<Biome> finalBiome = selection.biome();
                     if (!finalBiome.equals(raw)) {
                         biomeContainer.swapUnsafe(posX, posY, posZ, finalBiome);
-                        CELLS_CHANGED.incrementAndGet();
+                        changedCells++;
                     }
                 }
             }
         }
 
-        if (populateCall == 1L || populateCall == 64L || populateCall % 256L == 0L) {
+        CELL_SAMPLES.addAndGet(sampledCells);
+        PROTECTED_CELLS.addAndGet(protectedCells);
+        CELLS_CHANGED.addAndGet(changedCells);
+        REGION_CACHE_MISSES.addAndGet(regionCache.size());
+
+        /*
+         * Biome population is called heavily by C2ME and Distant Horizons.
+         * Log every 16,384 calls instead of every 256 to avoid drowning
+         * latest.log and adding avoidable I/O pressure during world generation.
+         */
+        if (populateCall == 1L || populateCall == 64L || populateCall % 16_384L == 0L) {
             FixMod.LOGGER.info(
                     "[Fix][BiomeStats] populate_calls={}, cells_sampled={}, protected_raw_cells={}, " +
-                            "region_cache_misses={}, cells_changed={}, mountain_candidate_regions={}, " +
+                            "region_cache_misses={}, cells_changed={}, mountain_candidate_decisions={}, " +
+                            "mountain_neighbour_search_hits={}, mountain_neighbour_search_misses={}, " +
                             "mountain_regions_kept={}, mountain_regions_rejected={}, " +
                             "non_mountain_fallback_found={}, non_mountain_fallback_missing={}.",
                     POPULATE_CALLS.get(),
@@ -195,7 +211,9 @@ public final class BiomeDistributionFix {
                     PROTECTED_CELLS.get(),
                     REGION_CACHE_MISSES.get(),
                     CELLS_CHANGED.get(),
-                    MOUNTAIN_CANDIDATES.get(),
+                    MOUNTAIN_CANDIDATE_DECISIONS.get(),
+                    MOUNTAIN_NEIGHBOR_HITS.get(),
+                    MOUNTAIN_NEIGHBOR_MISSES.get(),
                     MOUNTAIN_KEPT.get(),
                     MOUNTAIN_REJECTED.get(),
                     FALLBACK_FOUND.get(),
@@ -248,12 +266,32 @@ public final class BiomeDistributionFix {
         );
 
         /*
-         * The mountain grid is evaluated at the current location's nearest
-         * mountain centre, not at the normal-grid centre. This makes mountain
-         * zones independent from normal biome borders.
+         * Exact centre samples can miss a mountain range entirely: a 24,000
+         * block mountain cell may have its centre over ocean or ordinary land.
+         * Only when the deterministic gate allows mountains do we inspect the
+         * surrounding 3x3 normal-grid centres. That makes the large mountain
+         * cell inherit a nearby real mountain biome without querying a large
+         * neighbourhood for cells that will be rejected anyway.
+         */
+        if (!isMountainBiome(mountainBiome) && mountainGate <= MOUNTAIN_KEEP_CHANCE) {
+            RegistryEntry<Biome> nearbyMountain = findMountainBiomeNearRegion(
+                    mountainKey, y, supplier, sampler, regionCache
+            );
+            if (nearbyMountain != null) {
+                mountainBiome = nearbyMountain;
+                MOUNTAIN_NEIGHBOR_HITS.incrementAndGet();
+            } else {
+                MOUNTAIN_NEIGHBOR_MISSES.incrementAndGet();
+            }
+        }
+
+        /*
+         * The mountain grid remains independent from the normal grid. If its
+         * centre or its nearby normal-grid samples contain a mountain biome,
+         * this large cell may be retained according to the stable region gate.
          */
         if (isMountainBiome(mountainBiome)) {
-            MOUNTAIN_CANDIDATES.incrementAndGet();
+            MOUNTAIN_CANDIDATE_DECISIONS.incrementAndGet();
 
             if (mountainGate <= MOUNTAIN_KEEP_CHANCE) {
                 MOUNTAIN_KEPT.incrementAndGet();
@@ -330,12 +368,70 @@ public final class BiomeDistributionFix {
 
         RegistryEntry<Biome> biome = regionCache.get(cacheKey);
         if (biome == null) {
-            REGION_CACHE_MISSES.incrementAndGet();
             biome = supplier.getBiome(key.sampleX(), y, key.sampleZ(), sampler);
             regionCache.put(cacheKey, biome);
         }
 
         return biome;
+    }
+
+    private static RegistryEntry<Biome> findMountainBiomeNearRegion(
+            RegionKey mountainKey,
+            int y,
+            BiomeSupplier supplier,
+            MultiNoiseUtil.MultiNoiseSampler sampler,
+            Map<RegionSampleKey, RegistryEntry<Biome>> regionCache
+    ) {
+        RegionKey normalAnchor = findNearestRegion(
+                mountainKey.sampleX(),
+                mountainKey.sampleZ(),
+                NORMAL_REGION_SIZE,
+                NORMAL_JITTER,
+                NORMAL_JITTER_SALT
+        );
+
+        /*
+         * Search the nearest normal-grid centre, then its eight neighbours.
+         * The candidate is selected deterministically by distance to the
+         * mountain-grid centre, so all quart cells in a mountain region get
+         * the same mountain seed for a given Y level.
+         */
+        RegistryEntry<Biome> bestBiome = null;
+        long bestDistance = Long.MAX_VALUE;
+
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                RegionKey candidate = regionKey(
+                        normalAnchor.cellX() + dx,
+                        normalAnchor.cellZ() + dz,
+                        NORMAL_REGION_SIZE,
+                        NORMAL_JITTER,
+                        NORMAL_JITTER_SALT
+                );
+
+                RegistryEntry<Biome> candidateBiome = getRegionBiome(
+                        candidate, y, supplier, sampler, regionCache
+                );
+
+                if (!isMountainBiome(candidateBiome)) {
+                    continue;
+                }
+
+                long distance = squaredDistance(
+                        mountainKey.sampleX(),
+                        mountainKey.sampleZ(),
+                        candidate.sampleX(),
+                        candidate.sampleZ()
+                );
+
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestBiome = candidateBiome;
+                }
+            }
+        }
+
+        return bestBiome;
     }
 
     private static RegistryEntry<Biome> findNearestNonMountainBiome(
@@ -411,6 +507,9 @@ public final class BiomeDistributionFix {
             RegionKey mountainKey,
             Selection selection
     ) {
+        if (DETAILED_LOGS.get() >= MAX_DETAILED_PROBES) {
+            return;
+        }
         int logNumber = DETAILED_LOGS.getAndIncrement();
         if (logNumber >= MAX_DETAILED_PROBES) {
             return;
@@ -511,7 +610,9 @@ public final class BiomeDistributionFix {
                 || path.contains("highland")
                 || path.contains("jagged")
                 || path.contains("windswept")
-                || path.contains("slope");
+                || path.contains("slope")
+                || path.contains("meadow")
+                || path.equals("grove");
     }
 
     private static boolean isProtected(RegistryEntry<Biome> biome) {
