@@ -54,7 +54,7 @@ public final class BiomeDistributionFix {
     private static final AtomicLong PROTECTED_CELLS = new AtomicLong();
     private static final AtomicLong REGION_CACHE_MISSES = new AtomicLong();
     private static final AtomicLong CELLS_CHANGED = new AtomicLong();
-    private static final AtomicLong MOUNTAIN_CANDIDATES = new AtomicLong();
+    private static final AtomicLong MOUNTAIN_CANDIDATE_DECISIONS = new AtomicLong();
     private static final AtomicLong MOUNTAIN_NEIGHBOR_HITS = new AtomicLong();
     private static final AtomicLong MOUNTAIN_NEIGHBOR_MISSES = new AtomicLong();
     private static final AtomicLong MOUNTAIN_KEPT = new AtomicLong();
@@ -67,7 +67,7 @@ public final class BiomeDistributionFix {
 
     public static void logSettings() {
         FixMod.LOGGER.info(
-                "[Fix][BiomeDiag] algorithm=v2, enabled={}, coordinate_scale=4 blocks/quart, " +
+                "[Fix][BiomeDiag] algorithm=v3, enabled={}, coordinate_scale=4 blocks/quart, " +
                         "normal_regions~{}-{} blocks (nominal {}), mountain_regions~{}-{} blocks " +
                         "(nominal {}), mountain_keep_chance={}, detail_probe_limit={}.",
                 ENABLED,
@@ -202,7 +202,7 @@ public final class BiomeDistributionFix {
         if (populateCall == 1L || populateCall == 64L || populateCall % 16_384L == 0L) {
             FixMod.LOGGER.info(
                     "[Fix][BiomeStats] populate_calls={}, cells_sampled={}, protected_raw_cells={}, " +
-                            "region_cache_misses={}, cells_changed={}, mountain_candidate_regions={}, " +
+                            "region_cache_misses={}, cells_changed={}, mountain_candidate_decisions={}, " +
                             "mountain_neighbour_search_hits={}, mountain_neighbour_search_misses={}, " +
                             "mountain_regions_kept={}, mountain_regions_rejected={}, " +
                             "non_mountain_fallback_found={}, non_mountain_fallback_missing={}.",
@@ -211,7 +211,7 @@ public final class BiomeDistributionFix {
                     PROTECTED_CELLS.get(),
                     REGION_CACHE_MISSES.get(),
                     CELLS_CHANGED.get(),
-                    MOUNTAIN_CANDIDATES.get(),
+                    MOUNTAIN_CANDIDATE_DECISIONS.get(),
                     MOUNTAIN_NEIGHBOR_HITS.get(),
                     MOUNTAIN_NEIGHBOR_MISSES.get(),
                     MOUNTAIN_KEPT.get(),
@@ -291,7 +291,7 @@ public final class BiomeDistributionFix {
          * this large cell may be retained according to the stable region gate.
          */
         if (isMountainBiome(mountainBiome)) {
-            MOUNTAIN_CANDIDATES.incrementAndGet();
+            MOUNTAIN_CANDIDATE_DECISIONS.incrementAndGet();
 
             if (mountainGate <= MOUNTAIN_KEEP_CHANCE) {
                 MOUNTAIN_KEPT.incrementAndGet();
