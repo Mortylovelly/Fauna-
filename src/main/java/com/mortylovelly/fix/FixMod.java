@@ -29,6 +29,13 @@ public final class FixMod implements ModInitializer {
         BiomeDistributionFix.logSettings();
 
         LOGGER.info("[Fix] Fix - Modpack Compatibility & Balance loaded for Minecraft 1.20.1.");
+        LOGGER.info(
+                "[Fix][BiomeDiag] loaded_mod_version={}",
+                FabricLoader.getInstance()
+                        .getModContainer(MOD_ID)
+                        .map(container -> container.getMetadata().getVersion().getFriendlyString())
+                        .orElse("unknown")
+        );
         logModState("naturalist", "Naturalist");
         logModState("alexsmobs", "Alex's Mobs Continued");
         logModState("wildlife", "Wildlife");
