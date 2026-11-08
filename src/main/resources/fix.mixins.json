@@ -4,7 +4,8 @@
   "package": "com.mortylovelly.fix.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "ChunkSectionBiomeMixin"
+    "ChunkSectionBiomeMixin",
+    "NoiseChunkGeneratorMixin"
   ],
   "injectors": {
     "defaultRequire": 1

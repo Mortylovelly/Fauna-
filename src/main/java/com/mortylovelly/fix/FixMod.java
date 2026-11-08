@@ -1,6 +1,7 @@
 package com.mortylovelly.fix;
 
 import com.mortylovelly.fix.biome.BiomeDistributionFix;
+import com.mortylovelly.fix.command.MountainLocateCommand;
 import com.mortylovelly.fix.fauna.FaunaDeduplicator;
 import com.mortylovelly.fix.fix.FaunifyAttributeFix;
 import net.fabricmc.api.ModInitializer;
@@ -27,6 +28,7 @@ public final class FixMod implements ModInitializer {
 
         FaunaDeduplicator.register();
         BiomeDistributionFix.logSettings();
+        MountainLocateCommand.register();
 
         LOGGER.info("[Fix] Fix - Modpack Compatibility & Balance loaded for Minecraft 1.20.1.");
         LOGGER.info(
