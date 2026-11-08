@@ -135,25 +135,23 @@ public final class MountainLocateCommand {
             }
 
             if (best != null) {
-                int distanceBlocks = (int) Math.round(Math.sqrt(best.distanceSquared()));
-                source.sendFeedback(
-                        () -> Text.literal(
-                                "Verified " + requestedStage.getId() + " mountain: "
-                                        + "X=" + best.x()
-                                        + ", Y=" + (best.predictedTopY() + 1)
-                                        + ", Z=" + best.z()
-                                        + "; biome=" + best.biomeId()
-                                        + "; base_surfaceY=" + best.baseSurfaceY()
-                                        + "; predicted_peakY=" + best.predictedTopY()
-                                        + "; stage_capY=" + requestedStage.getTargetPeakY()
-                                        + "; world_topY=" + source.getWorld().getTopY()
-                                        + "; safe_terrain_topY=" + maxPlaceableY
-                                        + "; distance=" + distanceBlocks + " blocks. "
-                                        + "Teleport: /tp @s " + best.x() + " "
-                                        + (best.predictedTopY() + 1) + " " + best.z()
-                        ),
-                        false
-                );
+                MountainPoint result = best;
+                int distanceBlocks = (int) Math.round(Math.sqrt(result.distanceSquared()));
+                String feedback = "Verified " + requestedStage.getId() + " mountain: "
+                        + "X=" + result.x()
+                        + ", Y=" + (result.predictedTopY() + 1)
+                        + ", Z=" + result.z()
+                        + "; biome=" + result.biomeId()
+                        + "; base_surfaceY=" + result.baseSurfaceY()
+                        + "; predicted_peakY=" + result.predictedTopY()
+                        + "; stage_capY=" + requestedStage.getTargetPeakY()
+                        + "; world_topY=" + source.getWorld().getTopY()
+                        + "; safe_terrain_topY=" + maxPlaceableY
+                        + "; distance=" + distanceBlocks + " blocks. "
+                        + "Teleport: /tp @s " + result.x() + " "
+                        + (result.predictedTopY() + 1) + " " + result.z();
+
+                source.sendFeedback(() -> Text.literal(feedback), false);
                 return 1;
             }
         }
