@@ -210,6 +210,7 @@ public final class BiomeDistributionFix {
                     // transition band. Mountain regions remain controlled by
                     // their own larger grid.
                     if (!isProtected(finalBiome)
+                        && !isMountainBiome(finalBiome)
                         && isNearRegionBoundary(
                                 sampleX, sampleZ, normalKey,
                                 NORMAL_REGION_SIZE, NORMAL_JITTER, NORMAL_JITTER_SALT,
@@ -225,7 +226,7 @@ public final class BiomeDistributionFix {
                 // The mountain grid has its own border band as well. This
                 // prevents rectangular biome cliffs at the edge of retained
                 // large mountain regions.
-                if (!isProtected(finalBiome)
+                if (isMountainBiome(finalBiome)
                         && isNearRegionBoundary(
                                 sampleX, sampleZ, mountainKey,
                                 MOUNTAIN_REGION_SIZE, MOUNTAIN_JITTER, MOUNTAIN_JITTER_SALT,
@@ -233,7 +234,7 @@ public final class BiomeDistributionFix {
                         )) {
                     RegistryEntry<Biome> transitionBiome =
                             supplier.getBiome(sampleX, sampleY, sampleZ, sampler);
-                    if (!isProtected(transitionBiome)) {
+                    if (!isProtected(transitionBiome) && !isMountainBiome(transitionBiome)) {
                         finalBiome = transitionBiome;
                     }
                 }
