@@ -218,7 +218,8 @@ public final class BiomeDistributionFix {
                         )) {
                     RegistryEntry<Biome> transitionBiome =
                             supplier.getBiome(sampleX, sampleY, sampleZ, sampler);
-                    if (!isProtected(transitionBiome)) {
+                    if (!isProtected(transitionBiome)
+                            && !isMountainBiome(transitionBiome)) {
                         finalBiome = transitionBiome;
                     }
                 }

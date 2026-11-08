@@ -8,7 +8,7 @@ Targeted compatibility, fauna-balancing, stability and biome-distribution fixes 
 - Fabric Loader: 0.19.5
 - Fabric API: 0.92.12+1.20.1
 - Java target: 17
-- Fix version: 0.4.2
+- Fix version: 0.4.3
 
 ## Biome distribution
 
