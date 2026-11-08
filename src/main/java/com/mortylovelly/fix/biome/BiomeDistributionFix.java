@@ -48,7 +48,7 @@ public final class BiomeDistributionFix {
     private static final int MOUNTAIN_CLUSTER_SIZE = 2;
     private static final double MOUNTAIN_CLUSTER_KEEP_CHANCE = 0.30D;
     private static final double MOUNTAIN_ISOLATED_KEEP_CHANCE = 0.07D;
-    private static final int MOUNTAIN_SEARCH_RADIUS = 2;
+    private static final int MOUNTAIN_SEARCH_RADIUS = 1;
 
     private static final int TRANSITION_HALF_WIDTH_QUART = 350;
     private static final float INCOMPATIBLE_TEMPERATURE_DELTA = 0.75F;
@@ -499,8 +499,11 @@ public final class BiomeDistributionFix {
                         NORMAL_JITTER_SALT
                 );
 
-                RegistryEntry<Biome> candidateBiome = getRegionBiome(
-                        candidate, y, supplier, sampler, regionCache
+                // One independent centre sample per neighbouring normal
+                // macro-cell. Two mountain hits are required, which rejects
+                // single stray fragments without the cost of 5 samples x 25 cells.
+                RegistryEntry<Biome> candidateBiome = supplier.getBiome(
+                        candidate.sampleX(), y, candidate.sampleZ(), sampler
                 );
                 if (!isMountainBiome(candidateBiome)) {
                     continue;

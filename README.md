@@ -76,4 +76,4 @@ Build with:
 gradle build --no-daemon
 ```
 
-GitHub Actions uses Java 17 and Gradle 9.5.0.
+GitHub Actions runs Gradle/Loom on Java 21 because Loom 1.17.21 requires that runtime. Java source and bytecode compatibility remain Java 17 (`options.release = 17`).
