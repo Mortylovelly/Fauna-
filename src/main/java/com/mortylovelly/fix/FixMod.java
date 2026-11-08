@@ -28,6 +28,10 @@ public final class FixMod implements ModInitializer {
 
         FaunaDeduplicator.register();
         BiomeDistributionFix.logSettings();
+        LOGGER.info(
+                "[Fix][MountainHeight] model=continuous_2d_ridged_v2, stage_clusters=2x2, " +
+                        "stage_caps=small:500,medium:1200,large:2000, writes=bounded_by_world_height."
+        );
         MountainLocateCommand.register();
 
         LOGGER.info("[Fix] Fix - Modpack Compatibility & Balance loaded for Minecraft 1.20.1.");
