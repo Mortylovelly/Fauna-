@@ -28,15 +28,15 @@ public final class BiomeDistributionFix {
     private static final boolean ENABLED = true;
 
     /*
-     * Normal biomes: 3500 quart units = 14000 blocks nominal spacing.
-     * With centre jitter, estimated region widths are about 8400-19600 blocks.
+     * Normal biomes: 12500 quart units = 50000 blocks nominal spacing.
+     * With centre jitter, estimated region widths are about 30000-70000 blocks.
      */
     private static final int NORMAL_REGION_SIZE = 12500;
     private static final int NORMAL_JITTER = 2500;
 
     /*
-     * Mountains: nominal spacing 20,000 blocks; normal regions are 14,000.
-     * Jitter gives approximate mountain-region widths of 16,800-23,200 blocks.
+     * Mountains: 7500 quart units = 30000 blocks nominal spacing.
+     * Jitter gives approximate mountain-region widths of 22000-38000 blocks.
      */
     private static final int MOUNTAIN_REGION_SIZE = 7500;
     private static final int MOUNTAIN_JITTER = 1000;
