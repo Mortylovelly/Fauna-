@@ -31,15 +31,15 @@ public final class BiomeDistributionFix {
      * Normal biomes: 3500 quart units = 14000 blocks nominal spacing.
      * With centre jitter, estimated region widths are about 8400-19600 blocks.
      */
-    private static final int NORMAL_REGION_SIZE = 3500;
-    private static final int NORMAL_JITTER = 700;
+    private static final int NORMAL_REGION_SIZE = 12500;
+    private static final int NORMAL_JITTER = 2500;
 
     /*
      * Mountains: nominal spacing 20,000 blocks; normal regions are 14,000.
      * Jitter gives approximate mountain-region widths of 16,800-23,200 blocks.
      */
-    private static final int MOUNTAIN_REGION_SIZE = 5000;
-    private static final int MOUNTAIN_JITTER = 400;
+    private static final int MOUNTAIN_REGION_SIZE = 7500;
+    private static final int MOUNTAIN_JITTER = 1000;
 
     /*
      * Retain correlated 2x2 mountain-cell clusters, with a small isolated
@@ -50,11 +50,11 @@ public final class BiomeDistributionFix {
     private static final double MOUNTAIN_ISOLATED_KEEP_CHANCE = 0.07D;
     private static final int MOUNTAIN_SEARCH_RADIUS = 1;
 
-    private static final int TRANSITION_HALF_WIDTH_QUART = 350;
+    private static final int TRANSITION_HALF_WIDTH_QUART = 64;
     private static final float INCOMPATIBLE_TEMPERATURE_DELTA = 0.75F;
     private static final int MOUNTAIN_LOCATE_SAMPLE_QUART_Y = 40;
     private static final int BIOME_SELECTION_REFERENCE_Y_QUART = 40;
-    private static final int REGION_SAMPLE_OFFSET = 500;
+    private static final int REGION_SAMPLE_OFFSET = 1250;
 
     private static final long NORMAL_JITTER_SALT = 0x18D4A1C73B6E5F21L;
     private static final long MOUNTAIN_JITTER_SALT = 0x6A09E667F3BCC909L;
@@ -84,7 +84,7 @@ public final class BiomeDistributionFix {
 
     public static void logSettings() {
         FixMod.LOGGER.info(
-                "[Fix][BiomeDiag] algorithm=v5, enabled={}, coordinate_scale=4 blocks/quart, " +
+                "[Fix][BiomeDiag] algorithm=v6, enabled={}, coordinate_scale=4 blocks/quart, " +
                         "normal_regions~{}-{} blocks (nominal {}), mountain_regions~{}-{} blocks " +
                         "(nominal {}), mountain_cluster={}x{}, cluster_keep_chance={}, " +
                         "isolated_keep_chance={}, biome_reference_height={} blocks, transition_half_width={} blocks, " +
@@ -765,6 +765,14 @@ public final class BiomeDistributionFix {
     }
 
     private static boolean isProtected(RegistryEntry<Biome> biome) {
+        if (biome == null) {
+            return true;
+        }
+        // These vanilla biome tags also cover modded biomes that correctly
+        // declare themselves as Nether/End biomes, regardless of their ID.
+        if (biome.isIn(BiomeTags.IS_NETHER) || biome.isIn(BiomeTags.IS_END)) {
+            return true;
+        }
         String path = biomePath(biome);
         if (path.isEmpty()) {
             return true;
