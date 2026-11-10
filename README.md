@@ -9,16 +9,17 @@ Targeted compatibility, fauna-balancing, stability and biome-distribution fixes 
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.4
+- Fix version: 0.4.5
 
 ## Biome distribution
 
 Fix keeps existing registered biome IDs and adjusts how the biome source is represented across larger regions.
 
-- Normal macro-regions use a nominal spacing of 14,000 blocks.
-- Mountain macro-regions use a nominal spacing of 20,000 blocks.
+- Normal macro-regions use a nominal spacing of 50,000 blocks (jittered region widths are approximately 30,000–70,000 blocks).
+- Mountain macro-regions use a nominal spacing of 30,000 blocks (jittered region widths are approximately 22,000–38,000 blocks); the existing 2×2 mountain cluster and stage assignment remain aligned.
 - One land-biome decision is reused across the vertical layers of a horizontal macro-region. The original biome source is sampled at a fixed reference height of Y=160.
-- Raw river, ocean, cave, deep-dark, Nether and End cells remain protected.
+- Raw river, ocean, cave, deep-dark, Nether and End cells remain protected, including modded biomes carrying the vanilla Nether/End biome tags.
+- The source biome is sampled farther from each region centre, and the raw-biome boundary strip is narrowed to reduce small vanilla/modded biome fragments.
 - Entirely protected sections and protected-only vertical layers are skipped before expensive region calculations.
 - Horizontal region borders are calculated once per section rather than repeatedly for every vertical layer.
 - Neighbour smoothing corrects only strongly isolated, temperature-incompatible cells (at least 7 of 9 votes).
@@ -67,6 +68,8 @@ Negative X/Z coordinates are valid Minecraft world coordinates.
 
 On startup:
 - `[Fix][BiomeDiag]` reports region sizes, stable biome reference height and transition settings.
+- `[Fix][BiomeProbe]` samples the original biome, both macro-region anchors, selected mountain candidate and final biome. These project logger entries are automatically marked as Custom logs by Minecraft AI Agent.
+- Startup logs now also report whether Tectonic is loaded, so world-generation investigations can distinguish the mod's biome grid from terrain-shape changes.
 - `[Fix][MountainHeight]` reports the active 2D terrain model, shared 2x2 stage clusters and the three stage caps.
 
 During generation:
