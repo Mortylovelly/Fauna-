@@ -768,9 +768,12 @@ public final class BiomeDistributionFix {
         if (biome == null) {
             return true;
         }
-        // These vanilla biome tags also cover modded biomes that correctly
-        // declare themselves as Nether/End biomes, regardless of their ID.
-        if (biome.isIn(BiomeTags.IS_NETHER) || biome.isIn(BiomeTags.IS_END)) {
+        // Only biomes explicitly tagged for the Overworld may be changed.
+        // This also protects custom dimensions that use non-vanilla biome IDs.
+        // Nether/End tags are checked explicitly for clarity and diagnostics.
+        if (!biome.isIn(BiomeTags.IS_OVERWORLD)
+                || biome.isIn(BiomeTags.IS_NETHER)
+                || biome.isIn(BiomeTags.IS_END)) {
             return true;
         }
         String path = biomePath(biome);
