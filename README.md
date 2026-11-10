@@ -18,7 +18,7 @@ Fix keeps existing registered biome IDs and adjusts how the biome source is repr
 - Normal macro-regions use a nominal spacing of 50,000 blocks (jittered region widths are approximately 30,000–70,000 blocks).
 - Mountain macro-regions use a nominal spacing of 30,000 blocks (jittered region widths are approximately 22,000–38,000 blocks); the existing 2×2 mountain cluster and stage assignment remain aligned.
 - One land-biome decision is reused across the vertical layers of a horizontal macro-region. The original biome source is sampled at a fixed reference height of Y=160.
-- Raw river, ocean, cave, deep-dark, Nether and End cells remain protected, including modded biomes carrying the vanilla Nether/End biome tags.
+- Redistribution is restricted to biomes tagged `#minecraft:is_overworld`; Nether, End and other untagged-dimension biomes are left untouched. River, ocean, cave and deep-dark biomes remain protected.
 - The source biome is sampled farther from each region centre, and the raw-biome boundary strip is narrowed to reduce small vanilla/modded biome fragments.
 - Entirely protected sections and protected-only vertical layers are skipped before expensive region calculations.
 - Horizontal region borders are calculated once per section rather than repeatedly for every vertical layer.
