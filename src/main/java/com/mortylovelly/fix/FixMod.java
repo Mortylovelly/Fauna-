@@ -42,6 +42,13 @@ public final class FixMod implements ModInitializer {
                         .map(container -> container.getMetadata().getVersion().getFriendlyString())
                         .orElse("unknown")
         );
+        LOGGER.info(
+                "[Fix][WorldgenDiag] biome_grid=normal:50000m,mountain:30000m, " +
+                        "biome_dimension_gate=#minecraft:is_overworld, mountain_height_model=unchanged, " +
+                        "tectonic_loaded={}, distant_horizons_loaded={}, custom_log_route=project_logger.",
+                FabricLoader.getInstance().isModLoaded("tectonic"),
+                FabricLoader.getInstance().isModLoaded("distanthorizons")
+        );
         logModState("naturalist", "Naturalist");
         logModState("alexsmobs", "Alex's Mobs Continued");
         logModState("wildlife", "Wildlife");
