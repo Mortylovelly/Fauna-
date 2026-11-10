@@ -43,7 +43,7 @@ public final class FixMod implements ModInitializer {
                         .orElse("unknown")
         );
         LOGGER.info(
-                "[Fix][WorldgenDiag] biome_grid=normal:50000m,mountain:30000m, " +
+                "[Fix][WorldgenDiag] biome_grid=normal:50000blocks,mountain:30000blocks, " +
                         "biome_dimension_gate=#minecraft:is_overworld, mountain_height_model=unchanged, " +
                         "tectonic_loaded={}, distant_horizons_loaded={}, custom_log_route=project_logger.",
                 FabricLoader.getInstance().isModLoaded("tectonic"),
