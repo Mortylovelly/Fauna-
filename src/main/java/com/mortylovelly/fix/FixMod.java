@@ -53,6 +53,7 @@ public final class FixMod implements ModInitializer {
         logModState("naturalistdelight", "Naturalist Delight");
         logModState("yungscavebiomes", "YUNG's Cave Biomes");
         logModState("cavebiomesdelight", "Cave Biomes Delight");
+        logModState("tectonic", "Tectonic");
         logModState("distanthorizons", "Distant Horizons");
         logModState("minecartmagic", "Minecart Magic");
     }
