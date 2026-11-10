@@ -100,7 +100,12 @@ public final class MountainLocateCommand {
                     if (MountainStage.forRegion(noiseConfig, cellX, cellZ) != requestedStage) {
                         continue;
                     }
-                    if (!BiomeDistributionFix.isMountainRegionSelectedCell(cellX, cellZ)) {
+                    // A random selected cell is not enough: verify that the
+                    // final distributed biome at this region's anchor is truly
+                    // mountainous before searching its terrain.
+                    if (!BiomeDistributionFix.isSelectedMountainRegion(
+                            cellX, cellZ, biomeSource, noiseConfig.getMultiNoiseSampler()
+                    )) {
                         continue;
                     }
 
