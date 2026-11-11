@@ -9,7 +9,7 @@ Targeted compatibility, fauna-balancing, stability and biome-distribution fixes 
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.5
+- Fix version: 0.4.6
 
 ## Biome distribution
 
@@ -37,7 +37,7 @@ Each selected 2x2 mountain-region cluster receives one deterministic, world-seed
 | `medium` | 1200 |
 | `large` | 2000 |
 
-The terrain model is a continuous 2D height field:
+The terrain model is a continuous 2D height field. Mountain scaling now runs at the start of `NoiseChunkGenerator.buildSurface`, after base noise has populated the chunk and before the biome's top surface material is applied. This ensures the scaler reads the generated surface heightmap instead of an unpopulated heightmap:
 - a large-scale continental mask forms broad mountain belts;
 - domain-warped ridged noise creates long ridges, secondary peaks and valleys;
 - the same world-coordinate noise field is evaluated across chunk borders and across the four region cells in a 2x2 stage cluster;
