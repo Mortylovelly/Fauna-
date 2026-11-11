@@ -167,8 +167,8 @@ public final class MountainLocateCommand {
         source.sendError(Text.literal(
                 "No verified " + requestedStage.getId()
                         + " mountain surface found within "
-                        + (MAX_REGION_SEARCH_RADIUS * 20_000)
-                        + " blocks. Try another stage or a larger search radius."
+                        + (MAX_REGION_SEARCH_RADIUS * 30_000)
+                        + " blocks (nominal mountain-grid spacing). Try another stage or a larger search radius."
         ));
         return 0;
     }
@@ -259,10 +259,12 @@ public final class MountainLocateCommand {
                         biomeId
                 );
 
+                // Prefer the nearest valid point in this stage region.
+                // Predicted height is only a tie-breaker, not the primary goal.
                 if (best == null
-                        || candidate.predictedTopY() > best.predictedTopY()
-                        || (candidate.predictedTopY() == best.predictedTopY()
-                        && candidate.distanceSquared() < best.distanceSquared())) {
+                        || candidate.distanceSquared() < best.distanceSquared()
+                        || (candidate.distanceSquared() == best.distanceSquared()
+                        && candidate.predictedTopY() > best.predictedTopY())) {
                     best = candidate;
                 }
             }
