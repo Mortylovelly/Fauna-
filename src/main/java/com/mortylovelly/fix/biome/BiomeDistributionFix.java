@@ -746,13 +746,24 @@ public final class BiomeDistributionFix {
         if (biome == null) {
             return false;
         }
-        if (biome.isIn(BiomeTags.IS_MOUNTAIN)) {
-            return true;
-        }
 
         String path = biomePath(biome);
         if (path.isEmpty()) {
             return false;
+        }
+
+        // Meadows and groves are foothill/ecotone biomes. Some vanilla and
+        // modded mountain tags include them, but they must not be mountain
+        // peaks, mountain-locator targets or columns raised by the height model.
+        if (path.equals("meadow")
+                || path.endsWith("_meadow")
+                || path.equals("grove")
+                || path.endsWith("_grove")) {
+            return false;
+        }
+
+        if (biome.isIn(BiomeTags.IS_MOUNTAIN)) {
+            return true;
         }
 
         return path.contains("peak")
