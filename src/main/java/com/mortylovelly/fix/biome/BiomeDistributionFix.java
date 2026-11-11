@@ -409,7 +409,12 @@ public final class BiomeDistributionFix {
 
         if (!isMountainBiome(mountainBiome) && keepMountainRegion) {
             RegistryEntry<Biome> nearbyMountain = findMountainBiomeNearRegion(
-                    mountainKey, BIOME_SELECTION_REFERENCE_Y_QUART, supplier, sampler, regionCache
+                    mountainKey,
+                    BIOME_SELECTION_REFERENCE_Y_QUART,
+                    supplier,
+                    sampler,
+                    regionCache,
+                    normalBiome
             );
             if (nearbyMountain != null) {
                 mountainBiome = nearbyMountain;
@@ -530,41 +535,42 @@ public final class BiomeDistributionFix {
             int y,
             BiomeSupplier supplier,
             MultiNoiseUtil.MultiNoiseSampler sampler,
-            Map<RegionSampleKey, RegistryEntry<Biome>> regionCache
+            Map<RegionSampleKey, RegistryEntry<Biome>> regionCache,
+            RegistryEntry<Biome> climateReference
     ) {
-        RegionKey normalAnchor = findNearestRegion(
-                mountainKey.sampleX(),
-                mountainKey.sampleZ(),
-                NORMAL_REGION_SIZE,
-                NORMAL_JITTER,
-                NORMAL_JITTER_SALT
-        );
-
         RegistryEntry<Biome> bestBiome = null;
         long bestDistance = Long.MAX_VALUE;
-        int mountainSamples = 0;
 
+        /*
+         * Search the mountain grid, not the unrelated 50,000-block normal
+         * biome grid. A candidate is a five-point majority sample, so one
+         * matching selected mountain cell is enough to validate this region:
+         * the deterministic 2x2 cluster gate already suppresses isolated noise.
+         */
         for (int dx = -MOUNTAIN_SEARCH_RADIUS; dx <= MOUNTAIN_SEARCH_RADIUS; ++dx) {
             for (int dz = -MOUNTAIN_SEARCH_RADIUS; dz <= MOUNTAIN_SEARCH_RADIUS; ++dz) {
                 RegionKey candidate = regionKey(
-                        normalAnchor.cellX() + dx,
-                        normalAnchor.cellZ() + dz,
-                        NORMAL_REGION_SIZE,
-                        NORMAL_JITTER,
-                        NORMAL_JITTER_SALT
+                        mountainKey.cellX() + dx,
+                        mountainKey.cellZ() + dz,
+                        MOUNTAIN_REGION_SIZE,
+                        MOUNTAIN_JITTER,
+                        MOUNTAIN_JITTER_SALT
                 );
+                if (!shouldKeepMountainRegion(candidate)) {
+                    continue;
+                }
 
-                // One independent centre sample per neighbouring normal
-                // macro-cell. Two mountain hits are required, which rejects
-                // single stray fragments without the cost of 5 samples x 25 cells.
-                RegistryEntry<Biome> candidateBiome = supplier.getBiome(
-                        candidate.sampleX(), y, candidate.sampleZ(), sampler
+                RegistryEntry<Biome> candidateBiome = getRegionBiome(
+                        candidate, y, supplier, sampler, regionCache
                 );
                 if (!isMountainBiome(candidateBiome)) {
                     continue;
                 }
+                if (climateReference != null
+                        && areClimateIncompatible(candidateBiome, climateReference)) {
+                    continue;
+                }
 
-                mountainSamples++;
                 long distance = squaredDistance(
                         mountainKey.sampleX(),
                         mountainKey.sampleZ(),
@@ -578,7 +584,7 @@ public final class BiomeDistributionFix {
             }
         }
 
-        return mountainSamples >= 2 ? bestBiome : null;
+        return bestBiome;
     }
 
     private static RegistryEntry<Biome> findNearestNonMountainBiome(
