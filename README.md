@@ -9,7 +9,7 @@ Targeted compatibility, fauna-balancing, stability and biome-distribution fixes 
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.6
+- Fix version: 0.4.7
 
 ## Biome distribution
 
@@ -55,7 +55,7 @@ This replaces the old proportional column-stretching code. The old algorithm cou
 - `/locate mountain medium`
 - `/locate mountain large`
 
-The command no longer reports only a jittered region centre. It samples candidate surface points and verifies:
+The command no longer reports only a jittered region centre. It samples candidate surface points, verifies the requested stage and mountain biome, and chooses the nearest valid result (predicted peak height is only a tie-breaker), rather than preferring a much farther but taller candidate:
 1. the requested stage belongs to the point's selected 2x2 region cluster;
 2. the final distributed biome at the actual noise-surface height is a mountain biome;
 3. the predicted 2D mountain surface rises above the source terrain.
