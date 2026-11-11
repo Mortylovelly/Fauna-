@@ -129,11 +129,14 @@ public final class MountainLocateCommand {
                             originZ
                     );
 
+                    // The command is a locator, so choose the nearest valid
+                    // mountain of the requested stage. Height is only a tie-breaker;
+                    // otherwise the old code preferred a distant, taller candidate.
                     if (candidate != null
                             && (best == null
-                            || candidate.predictedTopY() > best.predictedTopY()
-                            || (candidate.predictedTopY() == best.predictedTopY()
-                            && candidate.distanceSquared() < best.distanceSquared()))) {
+                            || candidate.distanceSquared() < best.distanceSquared()
+                            || (candidate.distanceSquared() == best.distanceSquared()
+                            && candidate.predictedTopY() > best.predictedTopY()))) {
                         best = candidate;
                     }
                 }
