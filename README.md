@@ -9,7 +9,7 @@ Targeted compatibility, fauna-balancing, stability and biome-distribution fixes 
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.7
+- Fix version: 0.4.8
 
 ## Biome distribution
 
@@ -19,7 +19,7 @@ Fix keeps existing registered biome IDs and adjusts how the biome source is repr
 - Mountain macro-regions use a nominal spacing of 30,000 blocks (jittered region widths are approximately 22,000–38,000 blocks); the existing 2×2 mountain cluster and stage assignment remain aligned.
 - One land-biome decision is reused across the vertical layers of a horizontal macro-region. The original biome source is sampled at a fixed reference height of Y=160.
 - Redistribution is restricted to biomes tagged `#minecraft:is_overworld`; Nether, End and other untagged-dimension biomes are left untouched. River, ocean, cave and deep-dark biomes remain protected.
-- The source biome is sampled farther from each region centre, and the raw-biome boundary strip is narrowed to reduce small vanilla/modded biome fragments.
+- The source biome is sampled farther from each region centre, and the raw-biome boundary strip is narrowed to reduce small vanilla/modded biome fragments. Mountain fallback samples follow the 30,000-block mountain grid, not the unrelated 50,000-block normal-biome grid; selected nearby mountain cells are sampled by a five-point majority and climate-checked.
 - Entirely protected sections and protected-only vertical layers are skipped before expensive region calculations.
 - Horizontal region borders are calculated once per section rather than repeatedly for every vertical layer.
 - Neighbour smoothing corrects only strongly isolated, temperature-incompatible cells (at least 7 of 9 votes).
@@ -55,7 +55,7 @@ This replaces the old proportional column-stretching code. The old algorithm cou
 - `/locate mountain medium`
 - `/locate mountain large`
 
-The command no longer reports only a jittered region centre. It samples candidate surface points, verifies the requested stage and mountain biome, and chooses the nearest valid result (predicted peak height is only a tie-breaker), rather than preferring a much farther but taller candidate:
+The command no longer reports only a jittered region centre. It samples candidate surface points, verifies the requested stage and mountain biome, and chooses the nearest valid point within the selected region (predicted peak height is only a tie-breaker), rather than preferring a much farther but taller peak:
 1. the requested stage belongs to the point's selected 2x2 region cluster;
 2. the final distributed biome at the actual noise-surface height is a mountain biome;
 3. the predicted 2D mountain surface rises above the source terrain.
