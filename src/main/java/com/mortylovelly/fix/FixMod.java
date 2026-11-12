@@ -1,7 +1,6 @@
 package com.mortylovelly.fix;
 
 import com.mortylovelly.fix.biome.BiomeDistributionFix;
-import com.mortylovelly.fix.command.MountainLocateCommand;
 import com.mortylovelly.fix.fauna.FaunaDeduplicator;
 import com.mortylovelly.fix.fix.FaunifyAttributeFix;
 import net.fabricmc.api.ModInitializer;
@@ -33,18 +32,14 @@ public final class FixMod implements ModInitializer {
 
         FaunaDeduplicator.register();
         BiomeDistributionFix.logSettings();
-        LOGGER.info(
-                "[Fix][MountainHeight] model=continuous_2d_ridged_v2, stage_clusters=2x2, " +
-                        "stage_caps=small:500,medium:1200,large:2000, writes=bounded_by_world_height."
-        );
-        MountainLocateCommand.register();
+
         // Emit after the integrated/dedicated server has started ticking so
         // the AI Agent's server Log4j bridge is already attached.
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (WORLDGEN_DIAG_LOGGED.compareAndSet(false, true)) {
                 LOGGER.info(
-                        "[Fix][WorldgenDiag] biome_grid=normal:50000blocks,mountain:30000blocks, " +
-                                "biome_dimension_gate=#minecraft:is_overworld, mountain_height_model=unchanged, " +
+                        "[Fix][WorldgenDiag] biome_grid=single:24000blocks (estimated 16000-32000), " +
+                                "biome_dimension_gate=#minecraft:is_overworld, mountain_height_override=disabled, " +
                                 "tectonic_loaded={}, distant_horizons_loaded={}, custom_log_route=project_logger.",
                         FabricLoader.getInstance().isModLoaded("tectonic"),
                         FabricLoader.getInstance().isModLoaded("distanthorizons")
