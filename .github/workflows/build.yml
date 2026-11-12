@@ -1,3 +1,4 @@
+# Build the current main branch for pushes and pull requests; workflow_dispatch also allows manual runs.
 name: Build Fix
 
 on:
