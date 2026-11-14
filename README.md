@@ -1,6 +1,6 @@
 # Fix — Modpack Compatibility & Balance
 
-Targeted compatibility, fauna-balancing, stability and biome-distribution fixes for the Mortylovelly Minecraft 1.20.1 Fabric modpack.
+Targeted compatibility, fauna-balancing and stability fixes for the Mortylovelly Minecraft 1.20.1 Fabric modpack.
 
 ## Current version
 
@@ -9,41 +9,20 @@ Targeted compatibility, fauna-balancing, stability and biome-distribution fixes 
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.9
+- Fix version: 0.4.10
 
-## Biome distribution
+## World generation
 
-Fix keeps existing biome IDs and redistributes eligible Overworld land biomes into large deterministic regions.
+Fix does not modify world generation.
 
-- A single jittered Voronoi grid is used for all eligible land biomes. Nominal spacing is 24,000 blocks; estimated region widths are approximately 16,000–32,000 blocks.
-- The source biome is sampled around each region anchor with a deterministic five-point majority vote at Y=160.
-- Region selections are stable across vertical layers of a region.
-- Original river, ocean, cave and deep-dark biomes remain protected. Nether, End and other biomes not tagged `#minecraft:is_overworld` are left unchanged.
-- There is no separate mountain grid, mountain-cluster selection chance, mountain-stage system, or forced mountain-biome substitution.
-- Biome distribution does not add or rename biome registry entries.
+- No biome redistribution or biome-palette replacement.
+- No changes to the vanilla `/locate biome` search.
+- No custom mountain selection, mountain frequency, mountain regions or mountain height overrides.
+- No terrain, continent, erosion, noise or world-height modifications.
+- Tectonic, Traverse and the world's other generation mods remain responsible for biome placement and terrain.
+- The previous biome-distribution experiments and their Mixins have been removed from the active mod. The mod metadata does not register a Mixin configuration.
 
-The same deterministic region lookup is used while filling chunk-section biome palettes and by the vanilla `/locate biome` search path. The locate mixin covers the BiomeSource overloads used by vanilla; redirects are optional so an unused overload does not prevent the game from starting.
-
-## Mountain terrain
-
-Fix no longer raises mountain columns or writes artificial stone columns.
-
-- Mountain heights and landforms come from the world's normal terrain generator, including Tectonic when installed.
-- There are no synthetic `small`, `medium`, or `large` mountain stages.
-- There is no 500/1200/2000-block peak target and no separate mountain terrain height field.
-- The world height configured by SkyLimitless is not changed.
-
-Mountain biomes remain ordinary registered biomes chosen by the underlying biome source and the shared large-region distribution. A mountain region can contain natural ridges, valleys, foothills and lower slopes; it is not forced into one narrow peak or a vertical stone wall.
-
-## Runtime diagnostics
-
-On startup:
-- `[Fix][BiomeDiag]` reports the grid dimensions, reference height and protected-biome policy.
-- `[Fix][WorldgenDiag]` reports whether Tectonic and Distant Horizons are loaded.
-
-During generation:
-- `[Fix][BiomeHook] ACTIVE` confirms the chunk biome palette hook is running.
-- `[Fix][BiomeStats]` reports sampled cells, protected cells, region samples and changed cells periodically rather than logging every section.
+Existing chunks are not rewritten by this mod. All new chunk generation is left to the active world-generation mods and the selected world preset.
 
 ## Fauna deduplication policy
 
@@ -61,6 +40,10 @@ Current preferences include:
 - Removes the known broken Naturalist Delight cattail recipe when it references the removed `naturalist:cattail`.
 - Includes targeted YUNG's Cave Biomes / Cave Biomes Delight loot-table compatibility data.
 - Does not change Tectonic parameters, SkyLimitless world-height settings, Better Caves configuration, or C2ME/VMP/ServerCore threading.
+
+## Runtime logging
+
+The mod no longer emits biome-grid, biome-hook, biome-statistics or mountain/world-generation diagnostic messages. Only compatibility, fauna and relevant startup messages remain.
 
 ## Development
 
