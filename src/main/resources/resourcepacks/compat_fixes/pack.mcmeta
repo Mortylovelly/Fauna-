@@ -1,6 +1,6 @@
 {
   "pack": {
     "pack_format": 15,
-    "description": "Compatibility fixes + Big Globe Vanilla+ worldgen tuning (MC 1.20.1)"
+    "description": "Fix compatibility data patches"
   }
 }
