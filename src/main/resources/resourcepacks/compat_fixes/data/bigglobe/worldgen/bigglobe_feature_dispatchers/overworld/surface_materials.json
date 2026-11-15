@@ -1,0 +1,28 @@
+{
+  "type": "script",
+  "dispatcher": [
+    "double riverBias = `bigglobe:overworld/raw/river`(minModifiableX | 8, minModifiableZ | 8)",
+    "riverBias = 1.0L - riverBias / 64.0L",
+    ";rocks",
+    "repeat (random.nextInt(1, 4):",
+    "int x = minModifiableX | random.nextInt(16)",
+    "int z = minModifiableZ | random.nextInt(16)",
+    "int y = world_traits.`bigglobe:y_level_on_surface`(x, z)",
+    "placeFeature(x, y, z, 'bigglobe:overworld/rock')",
+    ")",
+    ";flint",
+    "random.if (riverBias:",
+    "int x = minModifiableX | random.nextInt(16)",
+    "int z = minModifiableZ | random.nextInt(16)",
+    "int y = world_traits.`bigglobe:y_level_on_surface`(x, z)",
+    "placeFeature(x, y, z, 'bigglobe:overworld/flint')",
+    ")",
+    ";sticks",
+    "repeat (random.nextInt(1, 3):",
+    "int x = minModifiableX | random.nextInt(16)",
+    "int z = minModifiableZ | random.nextInt(16)",
+    "int y = world_traits.`bigglobe:y_level_on_surface`(x, z)",
+    "placeFeature(x, y, z, 'bigglobe:overworld/stick')",
+    ")"
+  ]
+}
