@@ -9,11 +9,21 @@ Targeted compatibility, fauna-balancing and stability fixes for the Mortylovelly
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.10
+- Fix version: 0.4.11
 
-## World generation
+## Big Globe ore compatibility
 
-Fix does not modify world generation.
+The built-in compatibility resource pack adapts ore generation to the Big Globe scripted chunk generator used by this pack.
+
+- Restores diamond and redstone generation at depths reachable with the pack's Overworld lower bound of Y=-160.
+- Registers Create zinc in Big Globe's rock-replacer pipeline using Create's 1.20.1 vein height range and vein size.
+- Registers Create Nuclear uranium and lead in the same pipeline, adapting their 1.20.1 placement heights and relative frequency.
+- Adds Create stone variants to Big Globe's ore-replaceable block tag, so ores can replace those host rocks when they occur.
+- Does not change the Overworld height, terrain layers, biome distribution, water features, structures, Nether or End generation.
+
+These are data-only worldgen compatibility entries. They affect newly generated chunks only; existing chunks are not retroactively populated with ores.
+
+## World generation boundaries
 
 - No biome redistribution or biome-palette replacement.
 - No changes to the vanilla `/locate biome` search.
@@ -21,8 +31,6 @@ Fix does not modify world generation.
 - No terrain, continent, erosion, noise or world-height modifications.
 - Tectonic, Traverse and the world's other generation mods remain responsible for biome placement and terrain.
 - The previous biome-distribution experiments and their Mixins have been removed from the active mod. The mod metadata does not register a Mixin configuration.
-
-Existing chunks are not rewritten by this mod. All new chunk generation is left to the active world-generation mods and the selected world preset.
 
 ## Fauna deduplication policy
 
