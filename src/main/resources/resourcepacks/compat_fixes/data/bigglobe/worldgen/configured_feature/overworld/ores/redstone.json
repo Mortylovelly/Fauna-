@@ -1,0 +1,23 @@
+{
+  "type": "bigglobe:ore",
+  "config": {
+    "seed": "redstone",
+    "blocks": {
+      "#bigglobe:stone_ore_replaceables": "minecraft:redstone_ore[lit=false]",
+      "#bigglobe:deepslate_ore_replaceables": "minecraft:deepslate_redstone_ore[lit=false]"
+    },
+    "chance": [
+      "double depthLine = unmixLinear(48.0L, 176.0L, `bigglobe:approximate_distance_below_surface`)",
+      "double depthCurve = 1.0L - 1.0L / (max(depthLine, 0.0L) ^ 2 + 1.0L)",
+      "double heatLine = world_traits.`bigglobe:temperature_at_surface`",
+      "double heatCurve = 1.0L / (fastExp2(2.0L + 4.0L * heatLine) + 1.0L)",
+      "return(depthCurve * heatCurve * 0.75L)"
+    ],
+    "radius": {
+      "type": "average",
+      "min": 2.5,
+      "max": 8.0,
+      "average": 3.5
+    }
+  }
+}

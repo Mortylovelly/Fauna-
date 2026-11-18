@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "bigglobe:nether/ores/betternether_cincinnasite",
+    "bigglobe:nether/ores/betternether_ruby_common",
+    "bigglobe:nether/ores/betternether_ruby_large",
+    "bigglobe:nether/ores/betternether_ruby_rare",
+    "bigglobe:nether/ores/betternether_ruby_soul",
+    "bigglobe:nether/ores/betternether_lapis",
+    "bigglobe:nether/ores/betternether_redstone"
+  ]
+}

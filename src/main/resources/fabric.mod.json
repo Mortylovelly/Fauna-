@@ -3,7 +3,7 @@
   "id": "fix",
   "version": "${version}",
   "name": "Fix - Modpack Compatibility & Balance",
-  "description": "Targeted compatibility, fauna-balancing and stability fixes for the Mortylovelly 1.20.1 Fabric modpack. Does not modify biome distribution or world terrain.",
+  "description": "Targeted compatibility, fauna-balancing, stability and Big Globe ore-generation fixes for the Mortylovelly 1.20.1 Fabric modpack.",
   "authors": [
     "Mortylovelly"
   ],

@@ -1,6 +1,6 @@
 {
   "pack": {
     "pack_format": 15,
-    "description": "Fix compatibility data patches"
+    "description": "Fix compatibility: Big Globe Overworld and BetterNether ores"
   }
 }

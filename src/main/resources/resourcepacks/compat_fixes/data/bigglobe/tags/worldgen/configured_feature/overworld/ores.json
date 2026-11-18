@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "bigglobe:overworld/ores/create_zinc",
+    "bigglobe:overworld/ores/create_nuclear_uranium",
+    "bigglobe:overworld/ores/create_nuclear_lead"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "bigglobe:ore",
+  "config": {
+    "seed": "fauna_fix_betternether_ruby_rare",
+    "blocks": {
+      "minecraft:netherrack": "betternether:nether_ruby_ore"
+    },
+    "chance": [
+      "double triangle = max(1.0L - abs(y - 547.0L) / 477.0L, 0.0L)",
+      "return(y >= 70.0L && y <= 1024.0L ? triangle * 0.0168L : 0.0L)"
+    ],
+    "radius": {
+      "type": "average",
+      "min": 2.1,
+      "max": 2.5,
+      "average": 2.3
+    }
+  }
+}
