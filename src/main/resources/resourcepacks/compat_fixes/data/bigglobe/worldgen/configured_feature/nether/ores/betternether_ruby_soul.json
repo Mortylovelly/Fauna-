@@ -2,18 +2,11 @@
   "type": "bigglobe:ore",
   "config": {
     "seed": "fauna_fix_betternether_ruby_soul",
-    "blocks": {
-      "minecraft:soul_soil": "betternether:nether_ruby_ore"
-    },
+    "blocks": {"minecraft:soul_soil": "betternether:nether_ruby_ore"},
     "chance": [
       "double biome = world_traits.`bigglobe:biome`.isIn('#bigglobe:nether_ores/betternether_ruby_soul') ? 1.0L : 0.0L",
-      "return(y >= 32.0L && y <= 1024.0L ? biome * 0.0726L : 0.0L)"
+      "return(y >= 256.0L && y <= 1024.0L ? biome * 0.8333L : 0.0L)"
     ],
-    "radius": {
-      "type": "average",
-      "min": 1.5,
-      "max": 1.9,
-      "average": 1.7
-    }
+    "radius": {"type": "average", "min": 1.5, "max": 1.9, "average": 1.7}
   }
 }

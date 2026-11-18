@@ -1,6 +1,4 @@
 {
   "replace": false,
-  "values": [
-    "bigglobe:ashen_wastes"
-  ]
+  "values": ["bigglobe:valley_of_souls", "betternether:soul_plain"]
 }

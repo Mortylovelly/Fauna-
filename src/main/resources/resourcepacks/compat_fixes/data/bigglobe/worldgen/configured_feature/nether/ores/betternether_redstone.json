@@ -2,18 +2,11 @@
   "type": "bigglobe:ore",
   "config": {
     "seed": "fauna_fix_betternether_redstone",
-    "blocks": {
-      "minecraft:netherrack": "betternether:nether_redstone_ore[lit=false]"
-    },
+    "blocks": {"minecraft:netherrack": "betternether:nether_redstone_ore[lit=false]"},
     "chance": [
-      "double triangle = max(1.0L - abs(y - 24.0L) / 16.0L, 0.0L)",
-      "return(y >= 8.0L && y <= 40.0L ? triangle * 0.7L : 0.0L)"
+      "double triangle = max(1.0L - abs(y - 192.0L) / 128.0L, 0.0L)",
+      "return(y >= 64.0L && y <= 320.0L ? triangle : 0.0L)"
     ],
-    "radius": {
-      "type": "average",
-      "min": 2.2,
-      "max": 2.8,
-      "average": 2.5
-    }
+    "radius": {"type": "average", "min": 2.2, "max": 2.8, "average": 2.5}
   }
 }

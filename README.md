@@ -9,18 +9,24 @@ Targeted compatibility, fauna-balancing and stability fixes for the Mortylovelly
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.11
+- Fix version: 0.4.12
 
 ## Big Globe ore compatibility
 
-The built-in compatibility resource pack adapts ore generation to the Big Globe scripted chunk generator used by this pack.
+The built-in compatibility resource pack adapts ore generation to the Big Globe 5.3.2 scripted chunk generator.
 
 - Restores diamond and redstone generation at depths reachable with the pack's Overworld lower bound of Y=-160.
-- Registers Create zinc in Big Globe's rock-replacer pipeline using Create's 1.20.1 vein height range and vein size.
-- Registers Create Nuclear uranium and lead in the same pipeline, adapting their 1.20.1 placement heights and relative frequency.
-- Registers BetterNether Cincinnasite, Nether Ruby variants, Nether Lapis and Nether Redstone in Big Globe's Nether ore pipeline, preserving their source height ranges and intended biome restrictions.
+- Registers Create zinc in Big Globe's rock-replacer pipeline, retaining its source Y range and approximately matching its original vein density and size.
+- Registers Create Nuclear uranium and lead. Uranium retains its original triangular height profile; lead uses two independent Big Globe ore passes to reproduce the original average count of 10 veins per chunk.
+- Registers Create Nuclear autunite as a rare rock-replacer feature to preserve the ore-bearing part of its striated overworld generation.
+- Registers BetterNether Cincinnasite, all Nether Ruby variants, Nether Lapis and Nether Redstone. Their original Nether-relative height offsets are converted to Big Globe's 0..1024 Nether height.
+- Corrects the BetterNether Soul Ruby biome list: Big Globe Valley of Souls and BetterNether Soul Plain, not Ashen Wastes.
+- Uses additional independent ore passes where Big Globe's one-attempt-per-section limit would otherwise under-generate high-count BetterNether ores.
 - Adds Create stone variants to Big Globe's ore-replaceable block tag as an additional host-block compatibility safeguard.
-- Does not change the Overworld height, terrain layers, biome distribution, water features, structures, Nether or End terrain generation.
+
+Create Nuclear 1.4.1's generated worldgen data contains uranium, lead and striated autunite generation. Thorium and nitrate are not registered as ore-generation features in that version, so this compatibility pack does not invent generation for them.
+
+Big Globe regular ore features make one placement attempt per 16x16x16 chunk section; the configured chance controls whether that attempt succeeds. This differs from vanilla CountPlacement and is why some source ores use multiple independent features.
 
 These are data-only worldgen compatibility entries. They affect newly generated chunks only; existing chunks are not retroactively populated with ores.
 

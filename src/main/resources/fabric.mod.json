@@ -4,9 +4,7 @@
   "version": "${version}",
   "name": "Fix - Modpack Compatibility & Balance",
   "description": "Targeted compatibility, fauna-balancing, stability and Big Globe ore-generation fixes for the Mortylovelly 1.20.1 Fabric modpack.",
-  "authors": [
-    "Mortylovelly"
-  ],
+  "authors": ["Mortylovelly"],
   "contact": {
     "homepage": "https://github.com/Mortylovelly/Fauna-",
     "sources": "https://github.com/Mortylovelly/Fauna-"
@@ -14,9 +12,7 @@
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "com.mortylovelly.fix.FixMod"
-    ]
+    "main": ["com.mortylovelly.fix.FixMod"]
   },
   "depends": {
     "fabricloader": ">=0.19.5",

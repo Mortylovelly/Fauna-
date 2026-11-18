@@ -2,17 +2,8 @@
   "type": "bigglobe:ore",
   "config": {
     "seed": "fauna_fix_betternether_cincinnasite",
-    "blocks": {
-      "minecraft:netherrack": "betternether:cincinnasite_ore"
-    },
-    "chance": [
-      "return(y >= 10.0L && y <= 1014.0L ? 0.16L : 0.0L)"
-    ],
-    "radius": {
-      "type": "average",
-      "min": 1.8,
-      "max": 2.2,
-      "average": 2.0
-    }
+    "blocks": {"minecraft:netherrack": "betternether:cincinnasite_ore"},
+    "chance": ["return(y >= 80.0L && y <= 944.0L ? 0.7407L : 0.0L)"],
+    "radius": {"type": "average", "min": 1.8, "max": 2.2, "average": 2.0}
   }
 }

@@ -1,0 +1,9 @@
+{
+  "type": "bigglobe:ore",
+  "config": {
+    "seed": "fauna_fix_createnuclear_autunite",
+    "blocks": {"#bigglobe:stone_ore_replaceables": "createnuclear:autunite"},
+    "chance": ["return(y >= -30.0L && y <= 70.0L ? 0.0089L : 0.0L)"],
+    "radius": {"type": "average", "min": 2.5, "max": 4.0, "average": 3.0}
+  }
+}
