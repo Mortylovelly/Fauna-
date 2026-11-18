@@ -1,0 +1,19 @@
+{
+  "type": "bigglobe:ore",
+  "config": {
+    "seed": "fauna_fix_betternether_lapis",
+    "blocks": {
+      "minecraft:netherrack": "betternether:nether_lapis_ore"
+    },
+    "chance": [
+      "double triangle = max(1.0L - abs(y - 523.0L) / 491.0L, 0.0L)",
+      "return(y >= 32.0L && y <= 1014.0L ? triangle * 0.456L : 0.0L)"
+    ],
+    "radius": {
+      "type": "average",
+      "min": 1.4,
+      "max": 1.8,
+      "average": 1.6
+    }
+  }
+}
