@@ -1,0 +1,19 @@
+{
+  "type": "bigglobe:ore",
+  "config": {
+    "seed": "fauna_fix_create_zinc",
+    "blocks": {
+      "#bigglobe:stone_ore_replaceables": "create:zinc_ore",
+      "#bigglobe:deepslate_ore_replaceables": "create:deepslate_zinc_ore"
+    },
+    "chance": [
+      "return(y >= -63.0L && y <= 70.0L ? 0.32L : 0.0L)"
+    ],
+    "radius": {
+      "type": "average",
+      "min": 1.8,
+      "max": 3.0,
+      "average": 2.4
+    }
+  }
+}
