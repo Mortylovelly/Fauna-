@@ -7,14 +7,13 @@
       "#bigglobe:deepslate_ore_replaceables": "createnuclear:deepslate_uranium_ore[lit=false]"
     },
     "chance": [
-      "double height = max(1.0L - abs(y) / 64.0L, 0.0L)",
-      "return(height * 0.50L)"
+      "return(max(0.0L, min(1.0L, 2.0L * (1.0L - abs(y) / 64.0L))))"
     ],
     "radius": {
       "type": "average",
-      "min": 1.5,
-      "max": 2.3,
-      "average": 1.9
+      "min": 1.8,
+      "max": 2.2,
+      "average": 2.0
     }
   }
 }
