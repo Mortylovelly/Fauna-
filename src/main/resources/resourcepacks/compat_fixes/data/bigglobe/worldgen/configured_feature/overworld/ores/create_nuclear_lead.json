@@ -1,0 +1,20 @@
+{
+  "type": "bigglobe:ore",
+  "config": {
+    "seed": "fauna_fix_createnuclear_lead",
+    "blocks": {
+      "#bigglobe:stone_ore_replaceables": "createnuclear:lead_ore",
+      "#bigglobe:deepslate_ore_replaceables": "createnuclear:deepslate_lead_ore"
+    },
+    "chance": [
+      "double height = max(1.0L - abs(y) / 64.0L, 0.0L)",
+      "return(height * 0.50L)"
+    ],
+    "radius": {
+      "type": "average",
+      "min": 1.5,
+      "max": 2.3,
+      "average": 1.9
+    }
+  }
+}
