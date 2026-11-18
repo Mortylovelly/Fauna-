@@ -18,8 +18,9 @@ The built-in compatibility resource pack adapts ore generation to the Big Globe 
 - Restores diamond and redstone generation at depths reachable with the pack's Overworld lower bound of Y=-160.
 - Registers Create zinc in Big Globe's rock-replacer pipeline using Create's 1.20.1 vein height range and vein size.
 - Registers Create Nuclear uranium and lead in the same pipeline, adapting their 1.20.1 placement heights and relative frequency.
-- Adds Create stone variants to Big Globe's ore-replaceable block tag, so ores can replace those host rocks when they occur.
-- Does not change the Overworld height, terrain layers, biome distribution, water features, structures, Nether or End generation.
+- Registers BetterNether Cincinnasite, Nether Ruby variants, Nether Lapis and Nether Redstone in Big Globe's Nether ore pipeline, preserving their source height ranges and intended biome restrictions.
+- Adds Create stone variants to Big Globe's ore-replaceable block tag as an additional host-block compatibility safeguard.
+- Does not change the Overworld height, terrain layers, biome distribution, water features, structures, Nether or End terrain generation.
 
 These are data-only worldgen compatibility entries. They affect newly generated chunks only; existing chunks are not retroactively populated with ores.
 
