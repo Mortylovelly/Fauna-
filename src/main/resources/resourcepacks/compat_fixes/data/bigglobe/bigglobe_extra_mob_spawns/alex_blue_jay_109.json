@@ -1,0 +1,9 @@
+{
+  "biomes": [
+    "#bigglobe:forest"
+  ],
+  "type": "alexsmobs:blue_jay",
+  "weight": 16,
+  "minCount": 2,
+  "maxCount": 4
+}

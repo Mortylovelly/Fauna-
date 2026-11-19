@@ -1,0 +1,14 @@
+{
+  "biomes": [
+    "bigglobe:ashen_wastes",
+    "bigglobe:crimson_forest",
+    "bigglobe:inferno",
+    "bigglobe:nether_wastes",
+    "bigglobe:valley_of_souls",
+    "bigglobe:warped_forest"
+  ],
+  "type": "alexsmobs:bone_serpent",
+  "weight": 1,
+  "minCount": 1,
+  "maxCount": 1
+}

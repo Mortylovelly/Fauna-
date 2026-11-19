@@ -1,0 +1,9 @@
+{
+  "biomes": [
+    "bigglobe:crimson_forest"
+  ],
+  "type": "alexsmobs:crimson_mosquito",
+  "weight": 15,
+  "minCount": 4,
+  "maxCount": 4
+}

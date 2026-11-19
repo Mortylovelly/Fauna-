@@ -1,0 +1,9 @@
+{
+  "biomes": [
+    "bigglobe:sandy_cave"
+  ],
+  "type": "yungscavebiomes:sand_snapper",
+  "weight": 50,
+  "minCount": 1,
+  "maxCount": 2
+}

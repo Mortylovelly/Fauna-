@@ -1,0 +1,9 @@
+{
+  "biomes": [
+    "bigglobe:warped_forest"
+  ],
+  "type": "alexsmobs:warped_toad",
+  "weight": 30,
+  "minCount": 5,
+  "maxCount": 5
+}

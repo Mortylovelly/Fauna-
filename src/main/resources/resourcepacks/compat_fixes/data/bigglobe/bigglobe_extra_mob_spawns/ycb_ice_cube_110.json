@@ -1,0 +1,9 @@
+{
+  "biomes": [
+    "bigglobe:frozen_cave"
+  ],
+  "type": "yungscavebiomes:ice_cube",
+  "weight": 100,
+  "minCount": 2,
+  "maxCount": 4
+}

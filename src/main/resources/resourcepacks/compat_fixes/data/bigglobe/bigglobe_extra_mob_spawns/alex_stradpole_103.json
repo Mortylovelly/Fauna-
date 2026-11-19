@@ -1,0 +1,10 @@
+{
+  "biomes": [
+    "bigglobe:ashen_wastes",
+    "bigglobe:inferno"
+  ],
+  "type": "alexsmobs:stradpole",
+  "weight": 3,
+  "minCount": 1,
+  "maxCount": 1
+}

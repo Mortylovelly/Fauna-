@@ -1,0 +1,9 @@
+{
+  "biomes": [
+    "bigglobe:deep_dark"
+  ],
+  "type": "alexsmobs:skreecher",
+  "weight": 10,
+  "minCount": 1,
+  "maxCount": 1
+}

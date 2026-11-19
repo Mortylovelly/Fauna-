@@ -1,0 +1,10 @@
+{
+  "biomes": [
+    "bigglobe:ashen_wastes",
+    "bigglobe:inferno"
+  ],
+  "type": "alexsmobs:straddler",
+  "weight": 70,
+  "minCount": 1,
+  "maxCount": 3
+}

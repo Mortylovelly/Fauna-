@@ -1,0 +1,11 @@
+{
+  "biomes": [
+    "bigglobe:hot_plains",
+    "bigglobe:hot_wasteland",
+    "bigglobe:warm_wasteland"
+  ],
+  "type": "alexsmobs:rain_frog",
+  "weight": 10,
+  "minCount": 1,
+  "maxCount": 3
+}

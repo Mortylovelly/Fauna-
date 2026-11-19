@@ -1,0 +1,12 @@
+{
+  "biomes": [
+    "bigglobe:deep_ocean",
+    "bigglobe:ocean",
+    "bigglobe:river",
+    "bigglobe:shallow_ocean"
+  ],
+  "type": "alexsmobs:devils_hole_pupfish",
+  "weight": 23,
+  "minCount": 5,
+  "maxCount": 12
+}

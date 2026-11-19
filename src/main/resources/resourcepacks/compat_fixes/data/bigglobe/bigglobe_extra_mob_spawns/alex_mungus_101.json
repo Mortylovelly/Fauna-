@@ -1,0 +1,9 @@
+{
+  "biomes": [
+    "bigglobe:mushroom_cave"
+  ],
+  "type": "alexsmobs:mungus",
+  "weight": 4,
+  "minCount": 3,
+  "maxCount": 5
+}

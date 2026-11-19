@@ -1,0 +1,11 @@
+{
+  "biomes": [
+    "bigglobe:river",
+    "bigglobe:swamp_forest",
+    "bigglobe:swamp_plains"
+  ],
+  "type": "alexsmobs:catfish",
+  "weight": 2,
+  "minCount": 1,
+  "maxCount": 3
+}
