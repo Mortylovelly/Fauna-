@@ -9,7 +9,7 @@ Targeted compatibility, fauna-balancing and stability fixes for the Mortylovelly
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.12
+- Fix version: 0.4.13
 
 ## Big Globe ore compatibility
 
@@ -19,9 +19,7 @@ The built-in compatibility resource pack adapts ore generation to the Big Globe 
 - Registers Create zinc in Big Globe's rock-replacer pipeline, retaining its source Y range and approximately matching its original vein density and size.
 - Registers Create Nuclear uranium and lead. Uranium retains its original triangular height profile; lead uses two independent Big Globe ore passes to reproduce the original average count of 10 veins per chunk.
 - Registers Create Nuclear autunite as a rare rock-replacer feature to preserve the ore-bearing part of its striated overworld generation.
-- Registers BetterNether Cincinnasite, all Nether Ruby variants, Nether Lapis and Nether Redstone. Their original Nether-relative height offsets are converted to Big Globe's 0..1024 Nether height.
-- Corrects the BetterNether Soul Ruby biome list: Big Globe Valley of Souls and BetterNether Soul Plain, not Ashen Wastes.
-- Uses additional independent ore passes where Big Globe's one-attempt-per-section limit would otherwise under-generate high-count BetterNether ores.
+- BetterNether world-generation compatibility is intentionally excluded. The compatibility resource pack contains no BetterNether block or biome references, so it can load with BetterNether absent.
 - Adds Create stone variants to Big Globe's ore-replaceable block tag as an additional host-block compatibility safeguard.
 
 Create Nuclear 1.4.1's generated worldgen data contains uranium, lead and striated autunite generation. Thorium and nitrate are not registered as ore-generation features in that version, so this compatibility pack does not invent generation for them.
