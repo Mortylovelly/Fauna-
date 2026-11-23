@@ -1,6 +1,7 @@
 package com.mortylovelly.fix;
 
 import com.mortylovelly.fix.fauna.FaunaDeduplicator;
+import com.mortylovelly.fix.fix.EndRemasteredLootCompat;
 import com.mortylovelly.fix.fix.FaunifyAttributeFix;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -25,6 +26,7 @@ public final class FixMod implements ModInitializer {
         }
 
         FaunaDeduplicator.register();
+        EndRemasteredLootCompat.register();
 
         LOGGER.info("[Fix] Fix - Modpack Compatibility & Balance loaded for Minecraft 1.20.1.");
         LOGGER.info(
@@ -46,6 +48,8 @@ public final class FixMod implements ModInitializer {
         logModState("yungscavebiomes", "YUNG's Cave Biomes");
         logModState("cavebiomesdelight", "Cave Biomes Delight");
         logModState("minecartmagic", "Minecart Magic");
+        logModState("endermanoverhaul", "Enderman Overhaul");
+        logModState("endrem", "End Remastered");
     }
 
     private static void registerCompatibilityResourcePack() {

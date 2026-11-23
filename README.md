@@ -9,7 +9,7 @@ Targeted compatibility, fauna-balancing and stability fixes for the Mortylovelly
 - Fabric API: 0.92.12+1.20.1
 - Java bytecode target: 17
 - Gradle/Loom runtime: Java 21
-- Fix version: 0.4.13
+- Fix version: 0.4.14
 
 ## Big Globe ore compatibility
 
@@ -27,6 +27,24 @@ Create Nuclear 1.4.1's generated worldgen data contains uranium, lead and striat
 Big Globe regular ore features make one placement attempt per 16x16x16 chunk section; the configured chance controls whether that attempt succeeds. This differs from vanilla CountPlacement and is why some source ores use multiple independent features.
 
 These are data-only worldgen compatibility entries. They affect newly generated chunks only; existing chunks are not retroactively populated with ores.
+
+## Big Globe fauna compatibility
+
+- Adds Big Globe's four habitable End biomes to Enderman Overhaul's existing End Enderman biome tag.
+- Adds Big Globe's End City biome, `bigglobe:end_plains`, to Enderman Overhaul's End Islands Enderman biome tag.
+- Keeps Enderman Overhaul's own spawn weights, group sizes, spawn costs, entity behavior and aggression unchanged.
+- Does not add Endermen to Big Globe's `bigglobe:the_void` biome.
+- These are additive optional biome-tag entries. They do not replace Enderman Overhaul's existing biome tags and remain safe when Big Globe is absent.
+
+## End Remastered loot compatibility
+
+When End Remastered and the relevant YUNG structure mod are installed, Fix adds End Remastered's own loot-table pool to the replacement structure's main treasure chest:
+
+- YUNG's Better Desert Temples: Old Eye in `betterdeserttemples:chests/tomb_pharaoh`.
+- YUNG's Better Jungle Temples: Rogue Eye in `betterjungletemples:chests/treasure`.
+- YUNG's Better Nether Fortresses: Nether Eye in `betterfortresses:chests/obsidian`.
+
+The bridge reuses End Remastered's own nested loot tables rather than copying or changing their chances. End Remastered's standard vanilla loot-table injections remain untouched. Better Mineshafts continues to use the vanilla abandoned-mineshaft loot table, so Lost Eye remains handled by End Remastered itself.
 
 ## World generation boundaries
 
