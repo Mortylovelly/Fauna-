@@ -3,7 +3,6 @@ package com.mortylovelly.fix.fix;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
 import net.minecraft.loot.entry.LootTableEntry;
 import net.minecraft.util.Identifier;
 
@@ -61,7 +60,7 @@ public final class EndRemasteredLootCompat {
         });
     }
 
-    private static void addEndRemasteredPool(LootTable table, Identifier endRemasteredLootTable) {
+    private static void addEndRemasteredPool(net.minecraft.loot.LootTable.Builder table, Identifier endRemasteredLootTable) {
         table.pool(LootPool.builder().with(LootTableEntry.builder(endRemasteredLootTable)));
     }
 }
