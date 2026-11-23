@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "bigglobe:cherry_forest",
+      "required": false
+    },
+    {
+      "id": "bigglobe:cherry_plains",
+      "required": false
+    }
+  ]
+}

@@ -2,7 +2,19 @@
   "replace": false,
   "values": [
     {
+      "id": "bigglobe:chorus_forest",
+      "required": false
+    },
+    {
+      "id": "bigglobe:end_mountain",
+      "required": false
+    },
+    {
       "id": "bigglobe:end_plains",
+      "required": false
+    },
+    {
+      "id": "bigglobe:overgrown_end",
       "required": false
     }
   ]

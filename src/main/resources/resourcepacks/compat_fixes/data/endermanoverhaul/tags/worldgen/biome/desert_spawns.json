@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#bigglobe:has_structure/vanilla/desert_pyramid",
+      "required": false
+    },
+    {
+      "id": "#bigglobe:has_structure/vanilla/village_desert",
+      "required": false
+    }
+  ]
+}

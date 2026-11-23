@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#bigglobe:cold",
+      "required": false
+    },
+    {
+      "id": "bigglobe:glacier",
+      "required": false
+    }
+  ]
+}

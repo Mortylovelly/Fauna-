@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "bigglobe:valley_of_souls",
+      "required": false
+    }
+  ]
+}

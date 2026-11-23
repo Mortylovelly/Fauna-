@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#bigglobe:has_structure/vanilla/woodland_mansion",
+      "required": false
+    }
+  ]
+}
